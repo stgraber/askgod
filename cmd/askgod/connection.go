@@ -173,7 +173,7 @@ func (c *client) websocket(path string) (*websocket.Conn, error) {
 	if after, ok := strings.CutPrefix(c.server, "https://"); ok {
 		u = fmt.Sprintf("wss://%s/1.0%s", after, path)
 	} else {
-		u = fmt.Sprintf("ws://%s/1.0%s", strings.TrimPrefix(c.server, "http://"), path)
+		u = fmt.Sprintf("ws://%s/1.0%s", strings.TrimPrefix(c.server, "http://"), path) //nolint:revive
 	}
 
 	// Grab the http transport handler

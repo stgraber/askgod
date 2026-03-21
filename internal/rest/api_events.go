@@ -316,7 +316,7 @@ func (r *rest) forwardEvents(peer string) {
 	if after, ok := strings.CutPrefix(peer, "https://"); ok {
 		peerURL = fmt.Sprintf("wss://%s/1.0/events?type=cluster", after)
 	} else {
-		peerURL = fmt.Sprintf("ws://%s/1.0/events?type=cluster", strings.TrimPrefix(peer, "http://"))
+		peerURL = fmt.Sprintf("ws://%s/1.0/events?type=cluster", strings.TrimPrefix(peer, "http://")) //nolint:revive
 	}
 
 	tlsConfig := &tls.Config{
