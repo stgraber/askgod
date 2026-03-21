@@ -45,7 +45,7 @@ func ParseTags(in string) (map[string]string, error) {
 
 // PackTags converts map[string]string to a serialized tags list.
 func PackTags(in map[string]string) string {
-	tags := []string{}
+	tags := make([]string, 0, len(in))
 
 	for k, v := range in {
 		tags = append(tags, fmt.Sprintf("%s:%s", k, v))
