@@ -61,7 +61,7 @@ func (c *client) cmdAdminImportFlags(ctx *cli.Context) error {
 	// Flush all existing entries
 	if ctx.Bool("flush") {
 		reader := bufio.NewReader(os.Stdin)
-		_, _ = fmt.Printf("Flush all flags (yes/no): ") //nolint:forbidigo
+		_, _ = fmt.Print("Flush all flags (yes/no): ") //nolint:forbidigo
 		input, _ := reader.ReadString('\n')
 
 		input = strings.TrimSuffix(input, "\n")

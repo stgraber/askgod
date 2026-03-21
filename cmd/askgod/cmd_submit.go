@@ -34,7 +34,7 @@ func (c *client) cmdSubmit(ctx *cli.Context) error {
 		_, _ = fmt.Printf("You shouldn't have sent that! You just lost your team %d points.\n", resp.Value*-1) //nolint:forbidigo
 
 	case resp.Value == 0:
-		_, _ = fmt.Printf("You sent a valid flag, but no points have been granted.\n") //nolint:forbidigo
+		_, _ = fmt.Print("You sent a valid flag, but no points have been granted.\n") //nolint:forbidigo
 
 	default:
 		_, _ = fmt.Printf("Congratulations, you score your team %d points!\n", resp.Value) //nolint:forbidigo
