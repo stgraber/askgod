@@ -25,12 +25,12 @@ func (c *client) cmdTimeline(_ *cli.Context) error {
 	first := true
 	for _, entry := range resp {
 		if !first {
-			_, _ = fmt.Println("")
+			_, _ = fmt.Println("") //nolint:forbidigo
 		} else {
 			first = false
 		}
 
-		_, _ = fmt.Printf("== %d: <%s> %s\n", entry.Team.ID, entry.Team.Country, entry.Team.Name)
+		_, _ = fmt.Printf("== %d: <%s> %s\n", entry.Team.ID, entry.Team.Country, entry.Team.Name) //nolint:forbidigo
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"Submit time", "Value", "Total"})
 		table.SetBorder(false)

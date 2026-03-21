@@ -198,7 +198,7 @@ func (c *client) cmdScoreboard(ctx *cli.Context) error {
 
 	// Refresh loop
 	for {
-		_, _ = fmt.Print("\033[H\033[2J")
+		_, _ = fmt.Print("\033[H\033[2J") //nolint:forbidigo
 
 		drawTable(board)
 

@@ -23,7 +23,7 @@ func (c *client) cmdStatus(_ *cli.Context) error {
 		return err
 	}
 
-	_, _ = fmt.Printf("%s", data)
+	_, _ = fmt.Printf("%s", data) //nolint:forbidigo
 
 	return nil
 }

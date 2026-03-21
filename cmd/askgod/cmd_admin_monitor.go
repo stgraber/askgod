@@ -72,7 +72,7 @@ func (c *client) cmdAdminMonitorLog(ctx *cli.Context) error {
 		}
 
 		format := log15.TerminalFormat()
-		_, _ = fmt.Printf("[%s] %s", event.Server, format.Format(&record))
+		_, _ = fmt.Printf("[%s] %s", event.Server, format.Format(&record)) //nolint:forbidigo
 	}
 
 	return nil //nolint:nilerr
@@ -118,13 +118,13 @@ func (c *client) cmdAdminMonitorFlags(_ *cli.Context) error {
 
 		switch score.Type {
 		case "valid":
-			_, _ = fmt.Printf("[%s][%s] Team \"%s\" (%s) scored %d points with \"%s\" (id=%d) (%s)\n",
+			_, _ = fmt.Printf("[%s][%s] Team \"%s\" (%s) scored %d points with \"%s\" (id=%d) (%s)\n", //nolint:forbidigo
 				event.Server, event.Timestamp.Local().Format(layout), score.Team.Name, team, score.Value, score.Input, score.Flag.ID, utils.PackTags(score.Flag.Tags))
 		case "duplicate":
-			_, _ = fmt.Printf("[%s][%s] Team \"%s\" (%s) re-submitted \"%s\" (id=%d) (%s)\n",
+			_, _ = fmt.Printf("[%s][%s] Team \"%s\" (%s) re-submitted \"%s\" (id=%d) (%s)\n", //nolint:forbidigo
 				event.Server, event.Timestamp.Local().Format(layout), score.Team.Name, team, score.Input, score.Flag.ID, utils.PackTags(score.Flag.Tags))
 		case "invalid":
-			_, _ = fmt.Printf("[%s][%s] Team \"%s\" (%s) submitted invalid flag \"%s\"\n",
+			_, _ = fmt.Printf("[%s][%s] Team \"%s\" (%s) submitted invalid flag \"%s\"\n", //nolint:forbidigo
 				event.Server, event.Timestamp.Local().Format(layout), score.Team.Name, team, score.Input)
 		default:
 		}
