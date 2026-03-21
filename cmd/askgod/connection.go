@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -122,7 +123,7 @@ func (c *client) queryStruct(method string, path string, data any, target any) e
 		}
 
 		// Some data to be sent along with the request
-		req, err = http.NewRequest(method, u, &buf)
+		req, err = http.NewRequestWithContext(context.TODO(), method, u, &buf)
 		if err != nil {
 			return err
 		}
@@ -131,7 +132,7 @@ func (c *client) queryStruct(method string, path string, data any, target any) e
 		req.Header.Set("Content-Type", "application/json")
 	} else {
 		// No data to be sent along with the request
-		req, err = http.NewRequest(method, u, nil)
+		req, err = http.NewRequestWithContext(context.TODO(), method, u, nil)
 		if err != nil {
 			return err
 		}
