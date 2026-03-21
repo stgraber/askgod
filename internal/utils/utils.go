@@ -3,7 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
-	"sort"
+	"slices"
 	"strings"
 )
 
@@ -51,7 +51,7 @@ func PackTags(in map[string]string) string {
 		tags = append(tags, fmt.Sprintf("%s:%s", k, v))
 	}
 
-	sort.Strings(tags)
+	slices.Sort(tags)
 
 	return strings.Join(tags, ",")
 }
