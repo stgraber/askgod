@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -31,7 +32,7 @@ func main() {
 			return err
 		}
 
-		return d.Run()
+		return d.Run(context.TODO())
 	}
 
 	err := app.Run(os.Args)

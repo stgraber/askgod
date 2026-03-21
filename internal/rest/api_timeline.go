@@ -20,7 +20,7 @@ func (r *rest) getTimeline(writer http.ResponseWriter, request *http.Request, lo
 	}
 
 	// Get the full timeline
-	timeline, err := r.db.GetTimeline()
+	timeline, err := r.db.GetTimeline(request.Context())
 	if err != nil {
 		logger.Error("Failed to get the timeline", log15.Ctx{"error": err})
 		r.errorResponse(500, "Internal Server Error", writer, request)
@@ -42,7 +42,7 @@ func (r *rest) getTimeline(writer http.ResponseWriter, request *http.Request, lo
 		// Look for a matching team
 		var team *api.AdminTeam
 		if r.hasAccess("team", request) {
-			team, err = r.db.GetTeamForIP(*ip)
+			team, err = r.db.GetTeamForIP(request.Context(), *ip)
 			if errors.Is(err, sql.ErrNoRows) {
 				logger.Warn("No team found for IP", log15.Ctx{"ip": ip.String()})
 				r.errorResponse(404, "No team found for IP", writer, request)

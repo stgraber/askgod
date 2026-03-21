@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -45,7 +46,7 @@ func (r *rest) updateConfig(writer http.ResponseWriter, request *http.Request, l
 	newConfig := req
 
 	// Attempt to update the database
-	err = r.db.UpdateConfig(req)
+	err = r.db.UpdateConfig(request.Context(), req)
 	if err != nil {
 		logger.Error("Failed to update the team", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -56,7 +57,7 @@ func (r *rest) updateConfig(writer http.ResponseWriter, request *http.Request, l
 	_ = r.eventSend("internal", api.EventInternal{Type: "config-updated"})
 	r.config.ConfigPut = newConfig
 
-	err = r.configHiddenTeams()
+	err = r.configHiddenTeams(request.Context())
 	if err != nil {
 		logger.Error("Failed to refresh hidden teams", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -70,10 +71,10 @@ func (r *rest) updateConfig(writer http.ResponseWriter, request *http.Request, l
 	_ = r.eventSend("timeline", api.EventTimeline{Type: "reload"})
 }
 
-func (r *rest) configHiddenTeams() error {
+func (r *rest) configHiddenTeams(ctx context.Context) error {
 	teamIDs := []int64{}
 
-	teams, err := r.db.GetTeams()
+	teams, err := r.db.GetTeams(ctx)
 	if err != nil {
 		r.logger.Error("Unable to refresh hidden teams", log15.Ctx{"error": err})
 

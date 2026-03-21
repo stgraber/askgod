@@ -27,7 +27,7 @@ func (r *rest) getTeam(writer http.ResponseWriter, request *http.Request, logger
 	}
 
 	// Look for a matching team
-	record, err := r.db.GetTeamForIP(*ip)
+	record, err := r.db.GetTeamForIP(request.Context(), *ip)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("No team found for IP", log15.Ctx{"ip": ip.String()})
 		r.errorResponse(404, "No team found for IP", writer, request)
@@ -120,7 +120,7 @@ func (r *rest) updateTeam(writer http.ResponseWriter, request *http.Request, log
 	}
 
 	// Look for a matching team
-	team, err := r.db.GetTeamForIP(*ip)
+	team, err := r.db.GetTeamForIP(request.Context(), *ip)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("No team found for IP", log15.Ctx{"ip": ip.String()})
 		r.errorResponse(404, "No team found for IP", writer, request)
@@ -167,7 +167,7 @@ func (r *rest) updateTeam(writer http.ResponseWriter, request *http.Request, log
 	newRecord.Tags = team.Tags
 
 	// Attempt to update the database
-	err = r.db.UpdateTeam(team.ID, newRecord)
+	err = r.db.UpdateTeam(request.Context(), team.ID, newRecord)
 	if err != nil {
 		logger.Error("Failed to update the team", log15.Ctx{"error": err})
 		r.errorResponse(500, "Internal Server Error", writer, request)
@@ -181,7 +181,7 @@ func (r *rest) updateTeam(writer http.ResponseWriter, request *http.Request, log
 
 func (r *rest) adminGetTeams(writer http.ResponseWriter, request *http.Request, logger log15.Logger) {
 	// Get all the teams from the database
-	teams, err := r.db.GetTeams()
+	teams, err := r.db.GetTeams(request.Context())
 	if err != nil {
 		logger.Error("Failed to query the team list", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -213,7 +213,7 @@ func (r *rest) adminCreateTeam(writer http.ResponseWriter, request *http.Request
 	}
 
 	// Attempt to create the database record
-	id, err := r.db.CreateTeam(newTeam)
+	id, err := r.db.CreateTeam(request.Context(), newTeam)
 	if err != nil {
 		logger.Error("Failed to create the team", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -239,7 +239,7 @@ func (r *rest) adminCreateTeams(writer http.ResponseWriter, request *http.Reques
 
 	for _, team := range newTeams {
 		// Attempt to create the database record
-		id, err := r.db.CreateTeam(team)
+		id, err := r.db.CreateTeam(request.Context(), team)
 		if err != nil {
 			logger.Error("Failed to create the team", log15.Ctx{"error": err})
 			r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -265,7 +265,7 @@ func (r *rest) adminGetTeam(writer http.ResponseWriter, request *http.Request, l
 	}
 
 	// Attempt to get the DB record
-	team, err := r.db.GetTeam(id)
+	team, err := r.db.GetTeam(request.Context(), id)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("Invalid team ID provided", log15.Ctx{"id": idVar})
 		r.errorResponse(404, "Invalid team ID provided", writer, request)
@@ -305,7 +305,7 @@ func (r *rest) adminUpdateTeam(writer http.ResponseWriter, request *http.Request
 	}
 
 	// Attempt to update the database
-	err = r.db.UpdateTeam(id, newTeam)
+	err = r.db.UpdateTeam(request.Context(), id, newTeam)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("Invalid team ID provided", log15.Ctx{"id": idVar})
 		r.errorResponse(404, "Invalid team ID provided", writer, request)
@@ -335,7 +335,7 @@ func (r *rest) adminDeleteTeam(writer http.ResponseWriter, request *http.Request
 	}
 
 	// Attempt to get the DB record
-	err = r.db.DeleteTeam(id)
+	err = r.db.DeleteTeam(request.Context(), id)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("Invalid team ID provided", log15.Ctx{"id": idVar})
 		r.errorResponse(404, "Invalid team ID provided", writer, request)
@@ -364,7 +364,7 @@ func (r *rest) adminClearTeams(writer http.ResponseWriter, request *http.Request
 	}
 
 	// Clear the database entries
-	err := r.db.ClearTeams()
+	err := r.db.ClearTeams(request.Context())
 	if err != nil {
 		logger.Error("Failed to clear all teams", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)

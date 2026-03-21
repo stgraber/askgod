@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -11,7 +12,7 @@ import (
 )
 
 // Connect sets up the database connection and returns a DB struct.
-func Connect(driver string, host string, username string, password string, database string, connections int, tls bool, logger log15.Logger) (*DB, error) {
+func Connect(ctx context.Context, driver string, host string, username string, password string, database string, connections int, tls bool, logger log15.Logger) (*DB, error) {
 	// We only support postgres for now
 	if driver != "postgres" {
 		return nil, errors.New("database driver not supported")
@@ -48,23 +49,23 @@ func Connect(driver string, host string, username string, password string, datab
 	db.SetMaxOpenConns(1)
 
 	// Test the connection
-	err = db.Ping()
+	err = db.PingContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Check if the database is initialized
-	_, err = db.GetCurrentSchema()
+	_, err = db.GetCurrentSchema(ctx)
 	if err != nil {
 		// Lets assume that the database is empty and create it
-		err = db.createDatabase()
+		err = db.createDatabase(ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	// Apply schema updates
-	err = db.updateDatabase()
+	err = db.updateDatabase(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"time"
 )
 
@@ -51,10 +52,10 @@ CREATE TABLE IF NOT EXISTS config (
 `
 
 // GetCurrentSchema returns the current DB schema version.
-func (db *DB) GetCurrentSchema() (int, error) {
+func (db *DB) GetCurrentSchema(ctx context.Context) (int, error) {
 	version := -1
 
-	err := db.QueryRow("SELECT max(version) FROM schema;").Scan(&version)
+	err := db.QueryRowContext(ctx, "SELECT max(version) FROM schema;").Scan(&version)
 	if err != nil {
 		return -1, err
 	}
@@ -70,9 +71,9 @@ func (*DB) getLatestSchema() int {
 	return dbUpdates[len(dbUpdates)-1].version
 }
 
-func (db *DB) createDatabase() error {
+func (db *DB) createDatabase(ctx context.Context) error {
 	// Setup a transaction
-	tx, err := db.Begin()
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -80,7 +81,7 @@ func (db *DB) createDatabase() error {
 	// Apply the latest schema
 	db.logger.Info("Creating initial database schema")
 
-	_, err = tx.Exec(schema)
+	_, err = tx.ExecContext(ctx, schema)
 	if err != nil {
 		errRollback := tx.Rollback()
 		if err != nil {
@@ -93,7 +94,7 @@ func (db *DB) createDatabase() error {
 	// Create the initial schema entry
 	db.logger.Info("Inserting initial schema entry")
 
-	_, err = tx.Exec("INSERT INTO schema (version, updated_at) VALUES ($1, $2);", db.getLatestSchema(), time.Now())
+	_, err = tx.ExecContext(ctx, "INSERT INTO schema (version, updated_at) VALUES ($1, $2);", db.getLatestSchema(), time.Now())
 	if err != nil {
 		errRollback := tx.Rollback()
 		if err != nil {
@@ -112,8 +113,8 @@ func (db *DB) createDatabase() error {
 	return nil
 }
 
-func (db *DB) updateDatabase() error {
-	current, err := db.GetCurrentSchema()
+func (db *DB) updateDatabase(ctx context.Context) error {
+	current, err := db.GetCurrentSchema(ctx)
 	if err != nil {
 		return err
 	}
@@ -123,7 +124,7 @@ func (db *DB) updateDatabase() error {
 			continue
 		}
 
-		err := update.apply(current, db, db.logger)
+		err := update.apply(ctx, current, db, db.logger)
 		if err != nil {
 			return err
 		}

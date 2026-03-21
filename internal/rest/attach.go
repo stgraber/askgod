@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"context"
 	"net"
 	"net/http"
 	"net/url"
@@ -15,7 +16,7 @@ import (
 var clusterPeers []string
 
 // AttachFunctions attaches all the REST API functions to the provided router.
-func AttachFunctions(conf *config.Config, router *http.ServeMux, db *database.DB, logger log15.Logger) error {
+func AttachFunctions(ctx context.Context, conf *config.Config, router *http.ServeMux, db *database.DB, logger log15.Logger) error {
 	r := rest{
 		config: conf,
 		db:     db,
@@ -24,7 +25,7 @@ func AttachFunctions(conf *config.Config, router *http.ServeMux, db *database.DB
 	}
 
 	// Update the list of hidden teams
-	err := r.configHiddenTeams()
+	err := r.configHiddenTeams(ctx)
 	if err != nil {
 		return err
 	}

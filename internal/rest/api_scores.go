@@ -16,7 +16,7 @@ import (
 
 func (r *rest) adminGetScores(writer http.ResponseWriter, request *http.Request, logger log15.Logger) {
 	// Get all the scores from the database
-	scores, err := r.db.GetScores()
+	scores, err := r.db.GetScores(request.Context())
 	if err != nil {
 		logger.Error("Failed to query the score list", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -71,7 +71,7 @@ func (r *rest) adminCreateScores(writer http.ResponseWriter, request *http.Reque
 
 func (r *rest) adminCreateScoreCommon(writer http.ResponseWriter, request *http.Request, logger log15.Logger, newScore api.AdminScorePost) bool {
 	// Attempt to update the database
-	id, err := r.db.CreateScore(newScore)
+	id, err := r.db.CreateScore(request.Context(), newScore)
 	if err != nil {
 		logger.Error("Failed to create the score", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -80,7 +80,7 @@ func (r *rest) adminCreateScoreCommon(writer http.ResponseWriter, request *http.
 	}
 
 	// Grab the information needed for the event
-	team, err := r.db.GetTeam(newScore.TeamID)
+	team, err := r.db.GetTeam(request.Context(), newScore.TeamID)
 	if err != nil {
 		logger.Error("Failed to get the team record", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -89,7 +89,7 @@ func (r *rest) adminCreateScoreCommon(writer http.ResponseWriter, request *http.
 	}
 
 	// Send the flag notification
-	flag, err := r.db.GetFlag(newScore.FlagID)
+	flag, err := r.db.GetFlag(request.Context(), newScore.FlagID)
 	if err != nil {
 		logger.Error("Failed to get the flag record", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -100,7 +100,7 @@ func (r *rest) adminCreateScoreCommon(writer http.ResponseWriter, request *http.
 	_ = r.eventSend("flags", api.EventFlag{Team: *team, Flag: flag, Input: flag.Flag, Value: newScore.Value, Type: "valid"})
 
 	// Send the timeline notification
-	total, err := r.db.GetTeamPoints(newScore.TeamID)
+	total, err := r.db.GetTeamPoints(request.Context(), newScore.TeamID)
 	if err != nil {
 		logger.Error("Failed to get the team score record", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -134,7 +134,7 @@ func (r *rest) adminGetScore(writer http.ResponseWriter, request *http.Request, 
 	}
 
 	// Attempt to get the DB record
-	score, err := r.db.GetScore(id)
+	score, err := r.db.GetScore(request.Context(), id)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("Invalid score ID provided", log15.Ctx{"id": idVar})
 		r.errorResponse(404, "Invalid score ID provided", writer, request)
@@ -174,7 +174,7 @@ func (r *rest) adminUpdateScore(writer http.ResponseWriter, request *http.Reques
 	}
 
 	// Get the current entry
-	currentScore, err := r.db.GetScore(id)
+	currentScore, err := r.db.GetScore(request.Context(), id)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("Invalid score ID provided", log15.Ctx{"id": idVar})
 		r.errorResponse(404, "Invalid score ID provided", writer, request)
@@ -188,7 +188,7 @@ func (r *rest) adminUpdateScore(writer http.ResponseWriter, request *http.Reques
 	}
 
 	// Get the initial total
-	totalBefore, err := r.db.GetTeamPoints(currentScore.TeamID)
+	totalBefore, err := r.db.GetTeamPoints(request.Context(), currentScore.TeamID)
 	if err != nil {
 		logger.Error("Failed to get the team score record", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -197,7 +197,7 @@ func (r *rest) adminUpdateScore(writer http.ResponseWriter, request *http.Reques
 	}
 
 	// Get the team
-	team, err := r.db.GetTeam(currentScore.TeamID)
+	team, err := r.db.GetTeam(request.Context(), currentScore.TeamID)
 	if err != nil {
 		logger.Error("Failed to get the team record", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -206,7 +206,7 @@ func (r *rest) adminUpdateScore(writer http.ResponseWriter, request *http.Reques
 	}
 
 	// Attempt to update the database
-	err = r.db.UpdateScore(id, newScore)
+	err = r.db.UpdateScore(request.Context(), id, newScore)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("Invalid score ID provided", log15.Ctx{"id": idVar})
 		r.errorResponse(404, "Invalid score ID provided", writer, request)
@@ -220,7 +220,7 @@ func (r *rest) adminUpdateScore(writer http.ResponseWriter, request *http.Reques
 	}
 
 	// Send the timeline notification
-	totalAfter, err := r.db.GetTeamPoints(currentScore.TeamID)
+	totalAfter, err := r.db.GetTeamPoints(request.Context(), currentScore.TeamID)
 	if err != nil {
 		logger.Error("Failed to get the team score record", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -252,7 +252,7 @@ func (r *rest) adminDeleteScore(writer http.ResponseWriter, request *http.Reques
 	}
 
 	// Get the current entry
-	currentScore, err := r.db.GetScore(id)
+	currentScore, err := r.db.GetScore(request.Context(), id)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("Invalid score ID provided", log15.Ctx{"id": idVar})
 		r.errorResponse(404, "Invalid score ID provided", writer, request)
@@ -266,7 +266,7 @@ func (r *rest) adminDeleteScore(writer http.ResponseWriter, request *http.Reques
 	}
 
 	// Get the initial total
-	totalBefore, err := r.db.GetTeamPoints(currentScore.TeamID)
+	totalBefore, err := r.db.GetTeamPoints(request.Context(), currentScore.TeamID)
 	if err != nil {
 		logger.Error("Failed to get the team score record", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -275,7 +275,7 @@ func (r *rest) adminDeleteScore(writer http.ResponseWriter, request *http.Reques
 	}
 
 	// Get the team
-	team, err := r.db.GetTeam(currentScore.TeamID)
+	team, err := r.db.GetTeam(request.Context(), currentScore.TeamID)
 	if err != nil {
 		logger.Error("Failed to get the team record", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -284,7 +284,7 @@ func (r *rest) adminDeleteScore(writer http.ResponseWriter, request *http.Reques
 	}
 
 	// Attempt to delete the DB record
-	err = r.db.DeleteScore(id)
+	err = r.db.DeleteScore(request.Context(), id)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("Invalid score ID provided", log15.Ctx{"id": idVar})
 		r.errorResponse(404, "Invalid score ID provided", writer, request)
@@ -298,7 +298,7 @@ func (r *rest) adminDeleteScore(writer http.ResponseWriter, request *http.Reques
 	}
 
 	// Send the timeline notification
-	totalAfter, err := r.db.GetTeamPoints(currentScore.TeamID)
+	totalAfter, err := r.db.GetTeamPoints(request.Context(), currentScore.TeamID)
 	if err != nil {
 		logger.Error("Failed to get the team score record", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -329,7 +329,7 @@ func (r *rest) adminClearScores(writer http.ResponseWriter, request *http.Reques
 	}
 
 	// Clear the database entries
-	err := r.db.ClearScores()
+	err := r.db.ClearScores(request.Context())
 	if err != nil {
 		logger.Error("Failed to clear all scores", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)

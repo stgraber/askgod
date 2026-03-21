@@ -27,7 +27,7 @@ func (r *rest) getTeamFlags(writer http.ResponseWriter, request *http.Request, l
 	}
 
 	// Look for a matching team
-	team, err := r.db.GetTeamForIP(*ip)
+	team, err := r.db.GetTeamForIP(request.Context(), *ip)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("No team found for IP", log15.Ctx{"ip": ip.String()})
 		r.errorResponse(404, "No team found for IP", writer, request)
@@ -41,7 +41,7 @@ func (r *rest) getTeamFlags(writer http.ResponseWriter, request *http.Request, l
 	}
 
 	// Get all the flags for the team
-	flags, err := r.db.GetTeamFlags(team.ID)
+	flags, err := r.db.GetTeamFlags(request.Context(), team.ID)
 	if err != nil {
 		logger.Error("Failed to query the flag list", log15.Ctx{"error": err, "teamid": team.ID})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -74,7 +74,7 @@ func (r *rest) getTeamFlag(writer http.ResponseWriter, request *http.Request, lo
 	}
 
 	// Look for a matching team
-	team, err := r.db.GetTeamForIP(*ip)
+	team, err := r.db.GetTeamForIP(request.Context(), *ip)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("No team found for IP", log15.Ctx{"ip": ip.String()})
 		r.errorResponse(404, "No team found for IP", writer, request)
@@ -88,7 +88,7 @@ func (r *rest) getTeamFlag(writer http.ResponseWriter, request *http.Request, lo
 	}
 
 	// Get all the flags for the team
-	flag, err := r.db.GetTeamFlag(team.ID, id)
+	flag, err := r.db.GetTeamFlag(request.Context(), team.ID, id)
 	if err != nil {
 		logger.Error("Failed to query the flag", log15.Ctx{"error": err, "teamid": team.ID, "flagid": id})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -140,7 +140,7 @@ func (r *rest) updateTeamFlag(writer http.ResponseWriter, request *http.Request,
 	}
 
 	// Look for a matching team
-	team, err := r.db.GetTeamForIP(*ip)
+	team, err := r.db.GetTeamForIP(request.Context(), *ip)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("No team found for IP", log15.Ctx{"ip": ip.String()})
 		r.errorResponse(404, "No team found for IP", writer, request)
@@ -154,7 +154,7 @@ func (r *rest) updateTeamFlag(writer http.ResponseWriter, request *http.Request,
 	}
 
 	// Update the team flag
-	err = r.db.UpdateTeamFlag(team.ID, id, flag)
+	err = r.db.UpdateTeamFlag(request.Context(), team.ID, id, flag)
 	if err != nil {
 		logger.Error("Failed to update the flag", log15.Ctx{"error": err, "teamid": team.ID, "flagid": id})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -200,7 +200,7 @@ func (r *rest) submitTeamFlag(writer http.ResponseWriter, request *http.Request,
 	}
 
 	// Look for a matching team
-	team, err := r.db.GetTeamForIP(*ip)
+	team, err := r.db.GetTeamForIP(request.Context(), *ip)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("No team found for IP", log15.Ctx{"ip": ip.String()})
 		r.errorResponse(404, "No team found for IP", writer, request)
@@ -223,7 +223,7 @@ func (r *rest) submitTeamFlag(writer http.ResponseWriter, request *http.Request,
 	}
 
 	// Submit the flag
-	result, adminFlag, err := r.db.SubmitTeamFlag(team.ID, flag)
+	result, adminFlag, err := r.db.SubmitTeamFlag(request.Context(), team.ID, flag)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
 		metricSubmitTeam.WithLabelValues(strconv.FormatInt(team.ID, 10), "invalid").Inc()
@@ -255,7 +255,7 @@ func (r *rest) submitTeamFlag(writer http.ResponseWriter, request *http.Request,
 	_ = r.eventSend("flags", api.EventFlag{Team: *team, Flag: adminFlag, Input: flag.Flag, Value: result.Value, Type: "valid"})
 
 	// Send the timeline notification
-	total, err := r.db.GetTeamPoints(team.ID)
+	total, err := r.db.GetTeamPoints(request.Context(), team.ID)
 	if err != nil {
 		logger.Error("Failed to get the team score record", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -286,7 +286,7 @@ func (r *rest) submitTeamFlag(writer http.ResponseWriter, request *http.Request,
 
 func (r *rest) adminGetFlags(writer http.ResponseWriter, request *http.Request, logger log15.Logger) {
 	// Get all the flags from the database
-	flags, err := r.db.GetFlags()
+	flags, err := r.db.GetFlags(request.Context())
 	if err != nil {
 		logger.Error("Failed to query the flag list", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -318,7 +318,7 @@ func (r *rest) adminCreateFlag(writer http.ResponseWriter, request *http.Request
 	}
 
 	// Attempt to update the database
-	id, err := r.db.CreateFlag(newFlag)
+	id, err := r.db.CreateFlag(request.Context(), newFlag)
 	if err != nil {
 		logger.Error("Failed to create the flag", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -343,7 +343,7 @@ func (r *rest) adminCreateFlags(writer http.ResponseWriter, request *http.Reques
 
 	for _, flag := range newFlags {
 		// Attempt to create the database record
-		id, err := r.db.CreateFlag(flag)
+		id, err := r.db.CreateFlag(request.Context(), flag)
 		if err != nil {
 			logger.Error("Failed to create the flag", log15.Ctx{"error": err})
 			r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)
@@ -368,7 +368,7 @@ func (r *rest) adminGetFlag(writer http.ResponseWriter, request *http.Request, l
 	}
 
 	// Attempt to get the DB record
-	flag, err := r.db.GetFlag(id)
+	flag, err := r.db.GetFlag(request.Context(), id)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("Invalid flag ID provided", log15.Ctx{"id": idVar})
 		r.errorResponse(404, "Invalid flag ID provided", writer, request)
@@ -408,7 +408,7 @@ func (r *rest) adminUpdateFlag(writer http.ResponseWriter, request *http.Request
 	}
 
 	// Attempt to update the database
-	err = r.db.UpdateFlag(id, newFlag)
+	err = r.db.UpdateFlag(request.Context(), id, newFlag)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("Invalid flag ID provided", log15.Ctx{"id": idVar})
 		r.errorResponse(404, "Invalid flag ID provided", writer, request)
@@ -437,7 +437,7 @@ func (r *rest) adminDeleteFlag(writer http.ResponseWriter, request *http.Request
 	}
 
 	// Attempt to get the DB record
-	err = r.db.DeleteFlag(id)
+	err = r.db.DeleteFlag(request.Context(), id)
 	if errors.Is(err, sql.ErrNoRows) {
 		logger.Warn("Invalid flag ID provided", log15.Ctx{"id": idVar})
 		r.errorResponse(404, "Invalid flag ID provided", writer, request)
@@ -465,7 +465,7 @@ func (r *rest) adminClearFlags(writer http.ResponseWriter, request *http.Request
 	}
 
 	// Clear the database entries
-	err := r.db.ClearFlags()
+	err := r.db.ClearFlags(request.Context())
 	if err != nil {
 		logger.Error("Failed to clear all flags", log15.Ctx{"error": err})
 		r.errorResponse(500, fmt.Sprintf("%v", err), writer, request)

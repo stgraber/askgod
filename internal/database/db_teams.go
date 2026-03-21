@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"net"
@@ -13,12 +14,12 @@ import (
 )
 
 // GetTeams retrieves all the team entries from the database.
-func (db *DB) GetTeams() ([]api.AdminTeam, error) {
+func (db *DB) GetTeams(ctx context.Context) ([]api.AdminTeam, error) {
 	// Return a list of teams
 	resp := []api.AdminTeam{}
 
 	// Query all the teams from the database
-	rows, err := db.Query("SELECT id, name, country, website, notes, subnets, tags FROM team ORDER BY id ASC;")
+	rows, err := db.QueryContext(ctx, "SELECT id, name, country, website, notes, subnets, tags FROM team ORDER BY id ASC;")
 	if err != nil {
 		return nil, err
 	}
@@ -52,12 +53,12 @@ func (db *DB) GetTeams() ([]api.AdminTeam, error) {
 }
 
 // GetTeam retrieves a single team entry from the database.
-func (db *DB) GetTeam(id int64) (*api.AdminTeam, error) {
+func (db *DB) GetTeam(ctx context.Context, id int64) (*api.AdminTeam, error) {
 	// Query the database entry
 	row := api.AdminTeam{}
 	tags := ""
 
-	err := db.QueryRow("SELECT id, name, country, website, notes, subnets, tags FROM team WHERE id=$1;", id).Scan(
+	err := db.QueryRowContext(ctx, "SELECT id, name, country, website, notes, subnets, tags FROM team WHERE id=$1;", id).Scan(
 		&row.ID, &row.Name, &row.Country, &row.Website, &row.Notes, &row.Subnets, &tags)
 	if err != nil {
 		return nil, err
@@ -72,9 +73,9 @@ func (db *DB) GetTeam(id int64) (*api.AdminTeam, error) {
 }
 
 // GetTeamForIP retrieves a single team entry for the provided IP.
-func (db *DB) GetTeamForIP(ip net.IP) (*api.AdminTeam, error) {
+func (db *DB) GetTeamForIP(ctx context.Context, ip net.IP) (*api.AdminTeam, error) {
 	// Get all the teams
-	teams, err := db.GetTeams()
+	teams, err := db.GetTeams(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -118,11 +119,11 @@ func (db *DB) GetTeamForIP(ip net.IP) (*api.AdminTeam, error) {
 }
 
 // CreateTeam adds a new team to the database.
-func (db *DB) CreateTeam(team api.AdminTeamPost) (int64, error) {
+func (db *DB) CreateTeam(ctx context.Context, team api.AdminTeamPost) (int64, error) {
 	id := int64(-1)
 
 	// Create the database entry
-	err := db.QueryRow("INSERT INTO team (name, country, website, notes, subnets, tags) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+	err := db.QueryRowContext(ctx, "INSERT INTO team (name, country, website, notes, subnets, tags) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
 		team.Name, team.Country, team.Website, team.Notes, team.Subnets, utils.PackTags(team.Tags)).Scan(&id)
 	if err != nil {
 		return -1, err
@@ -132,9 +133,9 @@ func (db *DB) CreateTeam(team api.AdminTeamPost) (int64, error) {
 }
 
 // UpdateTeam updates an existing team.
-func (db *DB) UpdateTeam(id int64, team api.AdminTeamPut) error {
+func (db *DB) UpdateTeam(ctx context.Context, id int64, team api.AdminTeamPut) error {
 	// Update the database entry
-	result, err := db.Exec("UPDATE team SET name=$1, country=$2, website=$3, notes=$4, subnets=$5, tags=$6 WHERE id=$7;",
+	result, err := db.ExecContext(ctx, "UPDATE team SET name=$1, country=$2, website=$3, notes=$4, subnets=$5, tags=$6 WHERE id=$7;",
 		team.Name, team.Country, team.Website, team.Notes, team.Subnets, utils.PackTags(team.Tags), id)
 	if err != nil {
 		return err
@@ -154,9 +155,9 @@ func (db *DB) UpdateTeam(id int64, team api.AdminTeamPut) error {
 }
 
 // DeleteTeam deletes a single team from the database.
-func (db *DB) DeleteTeam(id int64) error {
+func (db *DB) DeleteTeam(ctx context.Context, id int64) error {
 	// Delete the database entry
-	result, err := db.Exec("DELETE FROM team WHERE id=$1;", id)
+	result, err := db.ExecContext(ctx, "DELETE FROM team WHERE id=$1;", id)
 	if err != nil {
 		return err
 	}
@@ -175,15 +176,15 @@ func (db *DB) DeleteTeam(id int64) error {
 }
 
 // ClearTeams wipes all team entries from the database.
-func (db *DB) ClearTeams() error {
+func (db *DB) ClearTeams(ctx context.Context) error {
 	// Start a transaction
-	tx, err := db.Begin()
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 
 	// Wipe the table
-	_, err = tx.Exec("DELETE FROM team;")
+	_, err = tx.ExecContext(ctx, "DELETE FROM team;")
 	if err != nil {
 		errRollback := tx.Rollback()
 		if err != nil {
@@ -194,7 +195,7 @@ func (db *DB) ClearTeams() error {
 	}
 
 	// Reset the sequence
-	_, err = tx.Exec("ALTER SEQUENCE team_id_seq RESTART;")
+	_, err = tx.ExecContext(ctx, "ALTER SEQUENCE team_id_seq RESTART;")
 	if err != nil {
 		errRollback := tx.Rollback()
 		if err != nil {

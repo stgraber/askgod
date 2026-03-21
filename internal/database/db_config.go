@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"errors"
 	"strconv"
 	"strings"
@@ -12,9 +13,9 @@ import (
 var ErrEmptyConfig = errors.New("no configuration in database")
 
 // GetConfig retrieves the configuration.
-func (db *DB) GetConfig() (*api.ConfigPut, error) {
+func (db *DB) GetConfig(ctx context.Context) (*api.ConfigPut, error) {
 	// Query all the teams from the database
-	rows, err := db.Query("SELECT key, value FROM config;")
+	rows, err := db.QueryContext(ctx, "SELECT key, value FROM config;")
 	if err != nil {
 		return nil, err
 	}
@@ -71,15 +72,15 @@ func (db *DB) GetConfig() (*api.ConfigPut, error) {
 }
 
 // UpdateConfig updates the configuration.
-func (db *DB) UpdateConfig(config api.ConfigPut) error {
+func (db *DB) UpdateConfig(ctx context.Context, config api.ConfigPut) error {
 	// Start a transaction
-	tx, err := db.Begin()
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 
 	// Wipe the table
-	_, err = tx.Exec("DELETE FROM config;")
+	_, err = tx.ExecContext(ctx, "DELETE FROM config;")
 	if err != nil {
 		errRollback := tx.Rollback()
 		if err != nil {
@@ -105,7 +106,7 @@ func (db *DB) UpdateConfig(config api.ConfigPut) error {
 
 	// Insert the new config
 	for k, v := range dbConfig {
-		_, err = tx.Exec("INSERT INTO config (key, value) VALUES ($1, $2);", k, v)
+		_, err = tx.ExecContext(ctx, "INSERT INTO config (key, value) VALUES ($1, $2);", k, v)
 		if err != nil {
 			errRollback := tx.Rollback()
 			if err != nil {

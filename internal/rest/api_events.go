@@ -78,7 +78,7 @@ func (r *rest) injectEvents(writer http.ResponseWriter, request *http.Request, l
 
 		err = json.Unmarshal(data, &apiEvent)
 		if err == nil && apiEvent.Type == "internal" {
-			conf, err := r.db.GetConfig()
+			conf, err := r.db.GetConfig(request.Context())
 			if err != nil {
 				logger.Error("Failed to get new configuration", log15.Ctx{"error": err})
 
@@ -92,7 +92,7 @@ func (r *rest) injectEvents(writer http.ResponseWriter, request *http.Request, l
 			r.config.ConfigPut = *newConfig
 			logger.Info("Config updated", log15.Ctx{"old": oldConfig, "new": newConfig})
 
-			err = r.configHiddenTeams()
+			err = r.configHiddenTeams(request.Context())
 			if err != nil {
 				logger.Error("Failed to update hidden teams", log15.Ctx{"error": err})
 
@@ -173,7 +173,7 @@ func (r *rest) getEvents(writer http.ResponseWriter, request *http.Request, logg
 	if r.hasAccess("admin", request) {
 		teamid = -1
 	} else {
-		team, err := r.db.GetTeamForIP(*ip)
+		team, err := r.db.GetTeamForIP(request.Context(), *ip)
 		if err == nil {
 			teamid = team.ID
 		}

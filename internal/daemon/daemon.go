@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -51,7 +52,7 @@ func NewDaemon(configPath string) (*Daemon, error) {
 }
 
 // Run starts the daemon.
-func (d *Daemon) Run() error {
+func (d *Daemon) Run(ctx context.Context) error {
 	d.logger.Info("Starting askgod daemon")
 
 	// Read the configuration
@@ -86,6 +87,7 @@ func (d *Daemon) Run() error {
 
 	// Setup the database
 	db, err := database.Connect(
+		ctx,
 		d.config.Database.Driver,
 		d.config.Database.Host,
 		d.config.Database.Username,
@@ -101,18 +103,18 @@ func (d *Daemon) Run() error {
 	d.db = db
 
 	// Load the rest of the config
-	dbConf, err := d.db.GetConfig()
+	dbConf, err := d.db.GetConfig(ctx)
 	if err != nil && errors.Is(err, database.ErrEmptyConfig) {
 		d.logger.Info("Config is not found in database. Adding it from the YAML configuration.")
 
-		err := d.db.UpdateConfig(d.config.ConfigPut)
+		err := d.db.UpdateConfig(ctx, d.config.ConfigPut)
 		if err != nil {
 			d.logger.Info("Failed to add config.")
 
 			return err
 		}
 
-		dbConf, err = d.db.GetConfig()
+		dbConf, err = d.db.GetConfig(ctx)
 		if err != nil {
 			return err
 		}
@@ -128,6 +130,7 @@ func (d *Daemon) Run() error {
 	d.router = http.NewServeMux()
 
 	err = rest.AttachFunctions(
+		ctx,
 		d.config,
 		d.router,
 		d.db,

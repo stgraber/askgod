@@ -1,16 +1,18 @@
 package database
 
 import (
+	"context"
+
 	"github.com/nsec/askgod/api"
 )
 
 // GetTimeline generates the current timeline.
-func (db *DB) GetTimeline() ([]api.TimelineEntry, error) {
+func (db *DB) GetTimeline(ctx context.Context) ([]api.TimelineEntry, error) {
 	// Return a list of score entries
 	resp := []api.TimelineEntry{}
 
 	// Query all the scores from the database
-	rows, err := db.Query("SELECT team.id, team.country, team.name, team.website, score.value, score.submit_time FROM score LEFT JOIN team ON team.id=score.teamid ORDER BY team.id ASC, score.submit_time ASC;")
+	rows, err := db.QueryContext(ctx, "SELECT team.id, team.country, team.name, team.website, score.value, score.submit_time FROM score LEFT JOIN team ON team.id=score.teamid ORDER BY team.id ASC, score.submit_time ASC;")
 	if err != nil {
 		return nil, err
 	}

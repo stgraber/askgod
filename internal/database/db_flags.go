@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/nsec/askgod/api"
@@ -8,12 +9,12 @@ import (
 )
 
 // GetFlags retrieves all the flag entries from the database.
-func (db *DB) GetFlags() ([]api.AdminFlag, error) {
+func (db *DB) GetFlags(ctx context.Context) ([]api.AdminFlag, error) {
 	// Return a list of flags
 	resp := []api.AdminFlag{}
 
 	// Query all the flags from the database
-	rows, err := db.Query("SELECT id, flag, value, return_string, description, tags FROM flag ORDER BY id ASC;")
+	rows, err := db.QueryContext(ctx, "SELECT id, flag, value, return_string, description, tags FROM flag ORDER BY id ASC;")
 	if err != nil {
 		return nil, err
 	}
@@ -47,12 +48,12 @@ func (db *DB) GetFlags() ([]api.AdminFlag, error) {
 }
 
 // GetFlag retrieves a single flag entry from the database.
-func (db *DB) GetFlag(id int64) (*api.AdminFlag, error) {
+func (db *DB) GetFlag(ctx context.Context, id int64) (*api.AdminFlag, error) {
 	// Query the database entry
 	row := api.AdminFlag{}
 	tags := ""
 
-	err := db.QueryRow("SELECT id, flag, value, return_string, description, tags FROM flag WHERE id=$1;", id).Scan(
+	err := db.QueryRowContext(ctx, "SELECT id, flag, value, return_string, description, tags FROM flag WHERE id=$1;", id).Scan(
 		&row.ID, &row.Flag, &row.Value, &row.ReturnString, &row.Description, &tags)
 	if err != nil {
 		return nil, err
@@ -67,11 +68,11 @@ func (db *DB) GetFlag(id int64) (*api.AdminFlag, error) {
 }
 
 // CreateFlag adds a new flag to the database.
-func (db *DB) CreateFlag(flag api.AdminFlagPost) (int64, error) {
+func (db *DB) CreateFlag(ctx context.Context, flag api.AdminFlagPost) (int64, error) {
 	id := int64(-1)
 
 	// Create the database entry
-	err := db.QueryRow("INSERT INTO flag (flag, value, return_string, description, tags) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+	err := db.QueryRowContext(ctx, "INSERT INTO flag (flag, value, return_string, description, tags) VALUES ($1, $2, $3, $4, $5) RETURNING id",
 		flag.Flag, flag.Value, flag.ReturnString, flag.Description, utils.PackTags(flag.Tags)).Scan(&id)
 	if err != nil {
 		return -1, err
@@ -81,9 +82,9 @@ func (db *DB) CreateFlag(flag api.AdminFlagPost) (int64, error) {
 }
 
 // UpdateFlag updates an existing flag.
-func (db *DB) UpdateFlag(id int64, flag api.AdminFlagPut) error {
+func (db *DB) UpdateFlag(ctx context.Context, id int64, flag api.AdminFlagPut) error {
 	// Update the database entry
-	result, err := db.Exec("UPDATE flag SET flag=$1, value=$2, return_string=$3, description=$4, tags=$5 WHERE id=$6;",
+	result, err := db.ExecContext(ctx, "UPDATE flag SET flag=$1, value=$2, return_string=$3, description=$4, tags=$5 WHERE id=$6;",
 		flag.Flag, flag.Value, flag.ReturnString, flag.Description, utils.PackTags(flag.Tags), id)
 	if err != nil {
 		return err
@@ -103,9 +104,9 @@ func (db *DB) UpdateFlag(id int64, flag api.AdminFlagPut) error {
 }
 
 // DeleteFlag deletes a single flag from the database.
-func (db *DB) DeleteFlag(id int64) error {
+func (db *DB) DeleteFlag(ctx context.Context, id int64) error {
 	// Delete the database entry
-	result, err := db.Exec("DELETE FROM flag WHERE id=$1;", id)
+	result, err := db.ExecContext(ctx, "DELETE FROM flag WHERE id=$1;", id)
 	if err != nil {
 		return err
 	}
@@ -124,15 +125,15 @@ func (db *DB) DeleteFlag(id int64) error {
 }
 
 // ClearFlags wipes all flag entries from the database.
-func (db *DB) ClearFlags() error {
+func (db *DB) ClearFlags(ctx context.Context) error {
 	// Start a transaction
-	tx, err := db.Begin()
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 
 	// Wipe the table
-	_, err = tx.Exec("DELETE FROM flag;")
+	_, err = tx.ExecContext(ctx, "DELETE FROM flag;")
 	if err != nil {
 		errRollback := tx.Rollback()
 		if err != nil {
@@ -143,7 +144,7 @@ func (db *DB) ClearFlags() error {
 	}
 
 	// Reset the sequence
-	_, err = tx.Exec("ALTER SEQUENCE flag_id_seq RESTART;")
+	_, err = tx.ExecContext(ctx, "ALTER SEQUENCE flag_id_seq RESTART;")
 	if err != nil {
 		errRollback := tx.Rollback()
 		if err != nil {
