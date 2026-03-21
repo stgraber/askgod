@@ -137,6 +137,7 @@ func (r *rest) registerEndpoint(u string, access string, funcGet, funcPost, func
 
 				return
 			}
+		default:
 		}
 
 		r.logger.Info("Bad request (not implemented)", log15.Ctx{"method": request.Method, "url": request.URL, "client": request.RemoteAddr})

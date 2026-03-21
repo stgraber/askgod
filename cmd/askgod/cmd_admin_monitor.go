@@ -126,6 +126,7 @@ func (c *client) cmdAdminMonitorFlags(_ *cli.Context) error {
 		case "invalid":
 			_, _ = fmt.Printf("[%s][%s] Team \"%s\" (%s) submitted invalid flag \"%s\"\n",
 				event.Server, event.Timestamp.Local().Format(layout), score.Team.Name, team, score.Input)
+		default:
 		}
 	}
 
