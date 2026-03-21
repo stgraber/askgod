@@ -56,7 +56,7 @@ macos-client-arm:
 
 update-gomod:
 	go get -t -v -u ./...
-	go mod tidy --go=1.23.7
+	go mod tidy --go=1.25.0
 	go get toolchain@none
 
 check:
