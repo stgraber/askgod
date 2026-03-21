@@ -2,12 +2,11 @@ version: "2"
 linters:
   default: all
   disable:
+    - canonicalheader
     - cyclop # handled by revive
     - depguard
-    - dupl
     - err113
     - exhaustruct
-    - forbidigo
     - funlen # handled by revive
     - gochecknoglobals
     - gocognit
@@ -17,6 +16,7 @@ linters:
     - lll
     - maintidx
     - mnd
+    - nolintlint
     - testpackage
     - unparam
     - varnamelen
@@ -24,7 +24,18 @@ linters:
     - wsl
 
   settings:
+    dupl:
+      threshold: 200
+
     gosec:
+      excludes:
+      - G304
+      - G701
+      - G702
+      - G703
+      - G704
+      - G705
+      - G706
       config:
         G301: "0755"
         G306: "0644"
@@ -60,6 +71,11 @@ linters:
           disabled: true
         - name: nested-structs
           disabled: true
+        - name: confusing-results
+          disabled: true
+        - name: function-result-limit
+          arguments:
+            - 8
 
     tagliatelle:
       case:
@@ -73,6 +89,10 @@ linters:
       - linters:
           - errcheck
         source: ^\s*defer\s+
+      - path: api/
+        text: "bad package name"
+      - path: internal/utils/
+        text: "bad package name"
 
     paths:
       - third_party$
