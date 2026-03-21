@@ -19,6 +19,7 @@ func (db *DB) GetTimeline() ([]api.TimelineEntry, error) {
 	// Iterate through the results
 	total := int64(0)
 	entry := api.TimelineEntry{}
+
 	for rows.Next() {
 		rowTeam := api.Team{}
 		rowScore := api.TimelineEntryScore{}

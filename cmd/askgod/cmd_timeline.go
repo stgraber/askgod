@@ -21,6 +21,7 @@ func (c *client) cmdTimeline(_ *cli.Context) error {
 	}
 
 	const layout = "2006/01/02 15:04"
+
 	first := true
 	for _, entry := range resp {
 		if !first {

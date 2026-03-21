@@ -48,6 +48,7 @@ func (c *client) cmdAdminImportTeams(ctx *cli.Context) error {
 		reader := bufio.NewReader(os.Stdin)
 		_, _ = fmt.Printf("Flush all teams (yes/no): ")
 		input, _ := reader.ReadString('\n')
+
 		input = strings.TrimSuffix(input, "\n")
 		if strings.TrimSpace(strings.ToLower(input)) != "yes" {
 			return errors.New("user aborted flush operation")
@@ -67,6 +68,7 @@ func (c *client) cmdAdminImportTeams(ctx *cli.Context) error {
 
 	// Parse the JSON file
 	teams := []api.AdminTeam{}
+
 	err = json.Unmarshal(content, &teams)
 	if err != nil {
 		return err
@@ -135,6 +137,7 @@ func (c *client) cmdAdminUpdateTeam(ctx *cli.Context) error {
 	}
 
 	team := api.AdminTeam{}
+
 	err := c.queryStruct("GET", "/teams/"+ctx.Args().Get(0), nil, &team)
 	if err != nil {
 		return err

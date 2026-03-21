@@ -45,6 +45,7 @@ func (c *client) cmdScoreboard(ctx *cli.Context) error {
 		table.SetAutoWrapText(false)
 
 		rank := 1
+
 		for _, entry := range board {
 			lastSubmitTime := "never"
 			if !entry.LastSubmitTime.IsZero() {
@@ -89,6 +90,7 @@ func (c *client) cmdScoreboard(ctx *cli.Context) error {
 
 	go func() {
 		<-chReady
+
 		for {
 			_, data, err := conn.ReadMessage()
 			if err != nil {
@@ -98,12 +100,14 @@ func (c *client) cmdScoreboard(ctx *cli.Context) error {
 			}
 
 			event := api.Event{}
+
 			err = json.Unmarshal(data, &event)
 			if err != nil {
 				continue
 			}
 
 			entry := api.EventTimeline{}
+
 			err = json.Unmarshal(event.Metadata, &entry)
 			if err != nil {
 				continue
@@ -118,6 +122,7 @@ func (c *client) cmdScoreboard(ctx *cli.Context) error {
 			if entry.Type == "reload" {
 				// Get a new dump
 				board = []api.ScoreboardEntry{}
+
 				err = c.queryStruct("GET", "/scoreboard", nil, &board)
 				if err != nil {
 					close(chUpdate)
@@ -128,6 +133,7 @@ func (c *client) cmdScoreboard(ctx *cli.Context) error {
 
 			// Try to find the line
 			found := false
+
 			for i, line := range board {
 				if line.Team.ID != entry.TeamID {
 					continue
@@ -193,6 +199,7 @@ func (c *client) cmdScoreboard(ctx *cli.Context) error {
 	// Refresh loop
 	for {
 		_, _ = fmt.Print("\033[H\033[2J")
+
 		drawTable(board)
 
 		// Wait for an update

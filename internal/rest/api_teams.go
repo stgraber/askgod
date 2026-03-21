@@ -61,6 +61,7 @@ func (r *rest) updateTeam(writer http.ResponseWriter, request *http.Request, log
 
 	// Decode the provided JSON input
 	newTeam := api.TeamPut{}
+
 	err := json.NewDecoder(request.Body).Decode(&newTeam)
 	if err != nil {
 		logger.Warn("Malformed JSON provided", log15.Ctx{"error": err})
@@ -202,6 +203,7 @@ func (r *rest) adminCreateTeam(writer http.ResponseWriter, request *http.Request
 
 	// Decode the provided JSON input
 	newTeam := api.AdminTeamPost{}
+
 	err := json.NewDecoder(request.Body).Decode(&newTeam)
 	if err != nil {
 		logger.Warn("Malformed JSON provided", log15.Ctx{"error": err})
@@ -226,6 +228,7 @@ func (r *rest) adminCreateTeam(writer http.ResponseWriter, request *http.Request
 func (r *rest) adminCreateTeams(writer http.ResponseWriter, request *http.Request, logger log15.Logger) {
 	// Decode the provided JSON input
 	newTeams := []api.AdminTeamPost{}
+
 	err := json.NewDecoder(request.Body).Decode(&newTeams)
 	if err != nil {
 		logger.Warn("Malformed JSON provided", log15.Ctx{"error": err})
@@ -292,6 +295,7 @@ func (r *rest) adminUpdateTeam(writer http.ResponseWriter, request *http.Request
 
 	// Decode the provided JSON input
 	newTeam := api.AdminTeamPut{}
+
 	err = json.NewDecoder(request.Body).Decode(&newTeam)
 	if err != nil {
 		logger.Warn("Malformed JSON provided", log15.Ctx{"error": err})

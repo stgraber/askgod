@@ -54,6 +54,7 @@ func ReadConfigFile(configPath string, monitor bool, logger log15.Logger) (*Conf
 	logger.Info("Parsing configuration", log15.Ctx{"path": configPath})
 
 	conf := Config{logger: logger, Config: &api.Config{}}
+
 	err := parseConfig(configPath, conf.Config)
 	if err != nil {
 		return nil, err
@@ -77,6 +78,7 @@ func ReadConfigFile(configPath string, monitor bool, logger log15.Logger) (*Conf
 		if pathDir == "" {
 			pathDir = "./"
 		}
+
 		pathBase := filepath.Base(configPath)
 
 		go func() {
@@ -106,6 +108,7 @@ func ReadConfigFile(configPath string, monitor bool, logger log15.Logger) (*Conf
 					}
 
 					logger.Info("Configuration file changed, reloading", log15.Ctx{"path": configPath})
+
 					for _, handler := range conf.handlers {
 						handler(&conf)
 					}

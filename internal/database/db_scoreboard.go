@@ -23,6 +23,7 @@ func (db *DB) GetScoreboard() ([]api.ScoreboardEntry, error) {
 		row := api.ScoreboardEntry{}
 
 		submitTime := pq.NullTime{}
+
 		err := rows.Scan(&row.Team.ID, &row.Team.Country, &row.Team.Name, &row.Team.Website, &row.Value, &submitTime)
 		if err != nil {
 			return nil, err

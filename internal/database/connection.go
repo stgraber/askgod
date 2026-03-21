@@ -32,6 +32,7 @@ func Connect(driver string, host string, username string, password string, datab
 	if !tls {
 		sslmode = "disable"
 	}
+
 	psqlDB, err := sql.Open(driver, fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=%s", host, username, password, database, sslmode))
 	if err != nil {
 		return nil, err

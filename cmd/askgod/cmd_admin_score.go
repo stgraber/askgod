@@ -62,6 +62,7 @@ func (c *client) cmdAdminImportScores(ctx *cli.Context) error {
 		reader := bufio.NewReader(os.Stdin)
 		_, _ = fmt.Printf("Flush all scores (yes/no): ")
 		input, _ := reader.ReadString('\n')
+
 		input = strings.TrimSuffix(input, "\n")
 		if strings.TrimSpace(strings.ToLower(input)) != "yes" {
 			return errors.New("user aborted flush operation")
@@ -81,6 +82,7 @@ func (c *client) cmdAdminImportScores(ctx *cli.Context) error {
 
 	// Parse the JSON file
 	scores := []api.AdminScore{}
+
 	err = json.Unmarshal(content, &scores)
 	if err != nil {
 		return err
@@ -105,6 +107,7 @@ func (c *client) cmdAdminListScores(_ *cli.Context) error {
 	}
 
 	const layout = "2006/01/02 15:04"
+
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"ID", "TeamID", "FlagID", "Value", "Submit time", "Notes"})
 	table.SetBorder(false)
@@ -134,6 +137,7 @@ func (c *client) cmdAdminUpdateScore(ctx *cli.Context) error {
 	}
 
 	score := api.AdminScore{}
+
 	err := c.queryStruct("GET", "/scores/"+ctx.Args().Get(0), nil, &score)
 	if err != nil {
 		return err

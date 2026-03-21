@@ -104,6 +104,7 @@ func (d *Daemon) Run() error {
 	dbConf, err := d.db.GetConfig()
 	if err != nil && errors.Is(err, database.ErrEmptyConfig) {
 		d.logger.Info("Config is not found in database. Adding it from the YAML configuration.")
+
 		err := d.db.UpdateConfig(d.config.ConfigPut)
 		if err != nil {
 			d.logger.Info("Failed to add config.")
@@ -125,6 +126,7 @@ func (d *Daemon) Run() error {
 
 	// Setup the REST API
 	d.router = http.NewServeMux()
+
 	err = rest.AttachFunctions(
 		d.config,
 		d.router,
@@ -136,6 +138,7 @@ func (d *Daemon) Run() error {
 
 	// HTTP
 	chServers := make(chan error, 1)
+
 	if d.config.Daemon.HTTPPort > 0 {
 		// Prepare the TCP socket
 		socket, err := net.Listen("tcp", fmt.Sprintf(":%d", d.config.Daemon.HTTPPort))
@@ -149,6 +152,7 @@ func (d *Daemon) Run() error {
 		}
 
 		d.logger.Info("Binding HTTP", log15.Ctx{"port": d.config.Daemon.HTTPPort})
+
 		go func() {
 			server := &http.Server{
 				Handler: d.router,
@@ -160,6 +164,7 @@ func (d *Daemon) Run() error {
 			err := server.Serve(socket)
 			if err != nil {
 				chServers <- err
+
 				close(chServers)
 			}
 		}()
@@ -213,6 +218,7 @@ func (d *Daemon) Run() error {
 		socket = tls.NewListener(socket, tlsConfig)
 
 		d.logger.Info("Binding HTTPs", log15.Ctx{"port": d.config.Daemon.HTTPSPort})
+
 		go func() {
 			server := &http.Server{
 				Handler: d.router,
@@ -224,6 +230,7 @@ func (d *Daemon) Run() error {
 			err := server.Serve(socket)
 			if err != nil {
 				chServers <- err
+
 				close(chServers)
 			}
 		}()
@@ -237,6 +244,7 @@ func (d *Daemon) Run() error {
 		}
 
 		d.logger.Info("Binding Prometheus", log15.Ctx{"port": d.config.Daemon.PrometheusPort})
+
 		go func() {
 			router := http.NewServeMux()
 			router.Handle("/metrics", promhttp.Handler())
@@ -251,6 +259,7 @@ func (d *Daemon) Run() error {
 			err := server.Serve(socket)
 			if err != nil {
 				chServers <- err
+
 				close(chServers)
 			}
 		}()

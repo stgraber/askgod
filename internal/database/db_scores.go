@@ -98,6 +98,7 @@ func (db *DB) SubmitTeamFlag(teamid int64, flag api.FlagPost) (*api.Flag, *api.A
 	// Query the database entry
 	row := api.AdminFlag{}
 	tags := ""
+
 	err := db.QueryRow("SELECT id, flag, value, return_string, description, tags FROM flag WHERE LOWER(flag)=LOWER($1);", flag.Flag).Scan(
 		&row.ID, &row.Flag, &row.Value, &row.ReturnString, &row.Description, &tags)
 	if err != nil {
@@ -111,6 +112,7 @@ func (db *DB) SubmitTeamFlag(teamid int64, flag api.FlagPost) (*api.Flag, *api.A
 
 	// Check if already submitted
 	id := int64(-1)
+
 	err = db.QueryRow("SELECT id FROM score WHERE teamid=$1 AND flagid=$2;", teamid, row.ID).Scan(&id)
 	if err == nil {
 		return nil, &row, os.ErrExist
@@ -120,6 +122,7 @@ func (db *DB) SubmitTeamFlag(teamid int64, flag api.FlagPost) (*api.Flag, *api.A
 
 	// Add the flag
 	id = -1
+
 	err = db.QueryRow("INSERT INTO score (teamid, flagid, value, notes, submit_time) VALUES ($1, $2, $3, $4, $5) RETURNING id;",
 		teamid, row.ID, row.Value, flag.Notes, time.Now()).Scan(&id)
 	if err != nil {
@@ -128,6 +131,7 @@ func (db *DB) SubmitTeamFlag(teamid int64, flag api.FlagPost) (*api.Flag, *api.A
 
 	// Query the new entry
 	result := api.Flag{}
+
 	err = db.QueryRow("SELECT score.flagid, flag.description, score.value, score.notes, score.submit_time, flag.return_string FROM score LEFT JOIN flag ON flag.id=score.flagid WHERE score.id=$1;", id).Scan(
 		&result.ID, &result.Description, &result.Value, &result.Notes, &result.SubmitTime, &result.ReturnString)
 	if err != nil {
@@ -174,6 +178,7 @@ func (db *DB) GetScores() ([]api.AdminScore, error) {
 func (db *DB) GetScore(id int64) (*api.AdminScore, error) {
 	// Query the database entry
 	row := api.AdminScore{}
+
 	err := db.QueryRow("SELECT id, teamid, flagid, value, notes, submit_time FROM score WHERE id=$1;", id).Scan(
 		&row.ID, &row.TeamID, &row.FlagID, &row.Value, &row.Notes, &row.SubmitTime)
 	if err != nil {

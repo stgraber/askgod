@@ -22,6 +22,7 @@ func (db *DB) GetConfig() (*api.ConfigPut, error) {
 
 	// Iterate through the results
 	dbConfig := map[string]string{}
+
 	count := 0
 	for rows.Next() {
 		count++

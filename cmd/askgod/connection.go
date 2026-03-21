@@ -104,8 +104,10 @@ func (c *client) setupClient() error {
 }
 
 func (c *client) queryStruct(method string, path string, data any, target any) error {
-	var req *http.Request
-	var err error
+	var (
+		req *http.Request
+		err error
+	)
 
 	u := fmt.Sprintf("%s/1.0%s", c.server, path)
 
@@ -113,6 +115,7 @@ func (c *client) queryStruct(method string, path string, data any, target any) e
 	if data != nil {
 		// Encode the provided data
 		buf := bytes.Buffer{}
+
 		err := json.NewEncoder(&buf).Encode(data)
 		if err != nil {
 			return err
@@ -153,6 +156,7 @@ func (c *client) queryStruct(method string, path string, data any, target any) e
 	// Decode the response
 	if target != nil {
 		decoder := json.NewDecoder(resp.Body)
+
 		err = decoder.Decode(&target)
 		if err != nil {
 			return err
@@ -165,8 +169,8 @@ func (c *client) queryStruct(method string, path string, data any, target any) e
 func (c *client) websocket(path string) (*websocket.Conn, error) {
 	// Generate the URL
 	var u string
-	if strings.HasPrefix(c.server, "https://") {
-		u = fmt.Sprintf("wss://%s/1.0%s", strings.TrimPrefix(c.server, "https://"), path)
+	if after, ok := strings.CutPrefix(c.server, "https://"); ok {
+		u = fmt.Sprintf("wss://%s/1.0%s", after, path)
 	} else {
 		u = fmt.Sprintf("ws://%s/1.0%s", strings.TrimPrefix(c.server, "http://"), path)
 	}

@@ -30,6 +30,7 @@ func (r *rest) jsonResponse(data any, writer http.ResponseWriter, _ *http.Reques
 	// Writer the response
 	encoder := json.NewEncoder(writer)
 	encoder.SetIndent("", "\t")
+
 	err := encoder.Encode(data)
 	if err != nil {
 		r.logger.Error("Failed to marshal response to JSON", log15.Ctx{"error": err})

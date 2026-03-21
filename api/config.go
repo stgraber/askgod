@@ -6,8 +6,9 @@ package api
 // Config represents the Askgod configuration.
 type Config struct {
 	ConfigPut `yaml:",inline"`
-	Daemon    ConfigDaemon   `json:"daemon"   yaml:"daemon"`
-	Database  ConfigDatabase `json:"database" yaml:"database"`
+
+	Daemon   ConfigDaemon   `json:"daemon"   yaml:"daemon"`
+	Database ConfigDatabase `json:"database" yaml:"database"`
 }
 
 // ConfigPut represents the editable Askgod configuration.

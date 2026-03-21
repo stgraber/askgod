@@ -31,6 +31,7 @@ func (r *rest) getConfig(writer http.ResponseWriter, request *http.Request, _ lo
 func (r *rest) updateConfig(writer http.ResponseWriter, request *http.Request, logger log15.Logger) {
 	// Decode the provided JSON input
 	req := api.ConfigPut{}
+
 	err := json.NewDecoder(request.Body).Decode(&req)
 	if err != nil {
 		logger.Warn("Malformed JSON provided", log15.Ctx{"error": err})
@@ -71,6 +72,7 @@ func (r *rest) updateConfig(writer http.ResponseWriter, request *http.Request, l
 
 func (r *rest) configHiddenTeams() error {
 	teamIDs := []int64{}
+
 	teams, err := r.db.GetTeams()
 	if err != nil {
 		r.logger.Error("Unable to refresh hidden teams", log15.Ctx{"error": err})
@@ -83,6 +85,7 @@ func (r *rest) configHiddenTeams() error {
 			teamIDs = append(teamIDs, team.ID)
 		}
 	}
+
 	r.hiddenTeams = teamIDs
 
 	return nil

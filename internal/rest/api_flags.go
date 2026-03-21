@@ -113,6 +113,7 @@ func (r *rest) updateTeamFlag(writer http.ResponseWriter, request *http.Request,
 
 	// Decode the provided JSON input
 	flag := api.FlagPut{}
+
 	err = json.NewDecoder(request.Body).Decode(&flag)
 	if err != nil {
 		logger.Warn("Malformed JSON provided", log15.Ctx{"error": err})
@@ -172,6 +173,7 @@ func (r *rest) submitTeamFlag(writer http.ResponseWriter, request *http.Request,
 
 	// Decode the provided JSON input
 	flag := api.FlagPost{}
+
 	err := json.NewDecoder(request.Body).Decode(&flag)
 	if err != nil {
 		logger.Warn("Malformed JSON provided", log15.Ctx{"error": err})
@@ -306,6 +308,7 @@ func (r *rest) adminCreateFlag(writer http.ResponseWriter, request *http.Request
 
 	// Decode the provided JSON input
 	newFlag := api.AdminFlagPost{}
+
 	err := json.NewDecoder(request.Body).Decode(&newFlag)
 	if err != nil {
 		logger.Warn("Malformed JSON provided", log15.Ctx{"error": err})
@@ -329,6 +332,7 @@ func (r *rest) adminCreateFlag(writer http.ResponseWriter, request *http.Request
 func (r *rest) adminCreateFlags(writer http.ResponseWriter, request *http.Request, logger log15.Logger) {
 	// Decode the provided JSON input
 	newFlags := []api.AdminFlagPost{}
+
 	err := json.NewDecoder(request.Body).Decode(&newFlags)
 	if err != nil {
 		logger.Warn("Malformed JSON provided", log15.Ctx{"error": err})
@@ -394,6 +398,7 @@ func (r *rest) adminUpdateFlag(writer http.ResponseWriter, request *http.Request
 
 	// Decode the provided JSON input
 	newFlag := api.AdminFlagPut{}
+
 	err = json.NewDecoder(request.Body).Decode(&newFlag)
 	if err != nil {
 		logger.Warn("Malformed JSON provided", log15.Ctx{"error": err})

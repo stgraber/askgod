@@ -64,6 +64,7 @@ func (r *rest) injectEvents(writer http.ResponseWriter, request *http.Request, l
 		}
 
 		var rawEvent any
+
 		err = json.Unmarshal(data, &rawEvent)
 		if err != nil {
 			logger.Error("Received a broken event from peer", log15.Ctx{"error": err})
@@ -73,6 +74,7 @@ func (r *rest) injectEvents(writer http.ResponseWriter, request *http.Request, l
 
 		// Handle config reloads
 		var apiEvent api.Event
+
 		err = json.Unmarshal(data, &apiEvent)
 		if err == nil && apiEvent.Type == "internal" {
 			conf, err := r.db.GetConfig()
@@ -211,8 +213,10 @@ func (r *rest) eventSend(eventType string, eventMessage any) error {
 		if err != nil {
 			return err
 		}
+
 		eventHostname = hostname
 	}
+
 	event["server"] = eventHostname
 
 	return r.eventSendRaw(event)
@@ -225,12 +229,14 @@ func (r *rest) eventSendRaw(raw any) error {
 	}
 
 	event := api.Event{}
+
 	err = json.Unmarshal(body, &event)
 	if err != nil {
 		return err
 	}
 
 	eventsLock.Lock()
+
 	listeners := eventListeners
 	for _, listener := range listeners {
 		// Don't re-transmit cluster events
@@ -246,6 +252,7 @@ func (r *rest) eventSendRaw(raw any) error {
 		// If a team message and hide_others is in effect, restrict broadcast
 		if event.Type == "timeline" {
 			timeline := api.EventTimeline{}
+
 			err = json.Unmarshal(event.Metadata, &timeline)
 			if err != nil {
 				return err
@@ -283,6 +290,7 @@ func (r *rest) eventSendRaw(raw any) error {
 
 func logContextMap(ctx []any) map[string]string {
 	var key string
+
 	ctxMap := map[string]string{}
 
 	for _, entry := range ctx {
@@ -304,8 +312,8 @@ func logContextMap(ctx []any) map[string]string {
 
 func (r *rest) forwardEvents(peer string) {
 	var peerURL string
-	if strings.HasPrefix(peer, "https://") {
-		peerURL = fmt.Sprintf("wss://%s/1.0/events?type=cluster", strings.TrimPrefix(peer, "https://"))
+	if after, ok := strings.CutPrefix(peer, "https://"); ok {
+		peerURL = fmt.Sprintf("wss://%s/1.0/events?type=cluster", after)
 	} else {
 		peerURL = fmt.Sprintf("ws://%s/1.0/events?type=cluster", strings.TrimPrefix(peer, "http://"))
 	}
@@ -391,6 +399,7 @@ func (r *rest) forwardEvents(peer string) {
 			r.logger.Info("Connected to cluster peer", log15.Ctx{"peer": peer})
 
 			i = 0
+
 			<-listener.active
 
 			r.logger.Warn("Lost connection with cluster peer", log15.Ctx{"peer": peer})
@@ -398,6 +407,7 @@ func (r *rest) forwardEvents(peer string) {
 
 		time.Sleep(3 * time.Second)
 	}
+
 	r.logger.Error("Giving up on cluster peer", log15.Ctx{"peer": peer})
 }
 

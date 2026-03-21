@@ -38,6 +38,7 @@ func (r *rest) adminCreateScore(writer http.ResponseWriter, request *http.Reques
 
 	// Decode the provided JSON input
 	newScore := api.AdminScorePost{}
+
 	err := json.NewDecoder(request.Body).Decode(&newScore)
 	if err != nil {
 		logger.Warn("Malformed JSON provided", log15.Ctx{"error": err})
@@ -52,6 +53,7 @@ func (r *rest) adminCreateScore(writer http.ResponseWriter, request *http.Reques
 func (r *rest) adminCreateScores(writer http.ResponseWriter, request *http.Request, logger log15.Logger) {
 	// Decode the provided JSON input
 	newScores := []api.AdminScorePost{}
+
 	err := json.NewDecoder(request.Body).Decode(&newScores)
 	if err != nil {
 		logger.Warn("Malformed JSON provided", log15.Ctx{"error": err})
@@ -162,6 +164,7 @@ func (r *rest) adminUpdateScore(writer http.ResponseWriter, request *http.Reques
 
 	// Decode the provided JSON input
 	newScore := api.AdminScorePut{}
+
 	err = json.NewDecoder(request.Body).Decode(&newScore)
 	if err != nil {
 		logger.Warn("Malformed JSON provided", log15.Ctx{"error": err})

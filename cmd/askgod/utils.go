@@ -13,8 +13,10 @@ func getStructField(base reflect.Value, key string) (reflect.Value, error) {
 	field := base
 
 	found := false
+
 	for i := range field.NumField() {
 		f := field.Field(i)
+
 		ft := field.Type().Field(i)
 		if strings.EqualFold(ft.Name, key) {
 			field = f
@@ -66,10 +68,10 @@ func setStructKey(obj any, arg string) error {
 	}
 
 	switch {
-	case field.Type() == reflect.TypeOf(""):
+	case field.Type() == reflect.TypeFor[string]():
 		field.SetString(fields[1])
 
-	case field.Type() == reflect.TypeOf(true):
+	case field.Type() == reflect.TypeFor[bool]():
 		switch fields[1] {
 		case "false":
 			field.SetBool(false)
@@ -79,7 +81,7 @@ func setStructKey(obj any, arg string) error {
 			return fmt.Errorf("bad boolean: %s", fields[1])
 		}
 
-	case field.Type() == reflect.TypeOf(int64(0)):
+	case field.Type() == reflect.TypeFor[int64]():
 		intValue, err := strconv.ParseInt(fields[1], 10, 64)
 		if err != nil {
 			return err
@@ -87,7 +89,7 @@ func setStructKey(obj any, arg string) error {
 
 		field.SetInt(intValue)
 
-	case field.Type() == reflect.TypeOf(map[string]string{}):
+	case field.Type() == reflect.TypeFor[map[string]string]():
 		tags, err := utils.ParseTags(fields[1])
 		if err != nil {
 			return err

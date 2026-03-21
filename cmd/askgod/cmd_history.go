@@ -16,6 +16,7 @@ func (c *client) cmdHistory(ctx *cli.Context) error {
 
 	if ctx.NArg() > 0 {
 		flag := api.Flag{}
+
 		err := c.queryStruct("GET", "/team/flags/"+ctx.Args().Get(0), nil, &flag)
 		if err != nil {
 			return err
@@ -46,6 +47,7 @@ func (c *client) cmdHistory(ctx *cli.Context) error {
 	}
 
 	const layout = "2006/01/02 15:04"
+
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"ID", "Description", "Value", "Timestamp", "Message", "Notes"})
 	table.SetBorder(false)

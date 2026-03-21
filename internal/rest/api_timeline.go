@@ -57,6 +57,7 @@ func (r *rest) getTimeline(writer http.ResponseWriter, request *http.Request, lo
 		}
 
 		newTimeline := []api.TimelineEntry{}
+
 		for _, entry := range timeline {
 			if r.config.Scoring.HideOthers && (team == nil || entry.Team.ID != team.ID) {
 				continue

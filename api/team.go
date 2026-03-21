@@ -6,7 +6,8 @@ package api
 // Team represents a team as seen by its members.
 type Team struct {
 	TeamPut `yaml:",inline"`
-	ID      int64 `json:"id"      yaml:"id"`
+
+	ID int64 `json:"id" yaml:"id"`
 }
 
 // TeamPut represents the editable fields of a team as seen by its members.

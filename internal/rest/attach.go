@@ -81,6 +81,7 @@ func AttachFunctions(conf *config.Config, router *http.ServeMux, db *database.DB
 
 				return err
 			}
+
 			clusterPeers = append(clusterPeers, addr...)
 		}
 

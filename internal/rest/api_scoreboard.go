@@ -57,6 +57,7 @@ func (r *rest) getScoreboard(writer http.ResponseWriter, request *http.Request, 
 		}
 
 		newBoard := []api.ScoreboardEntry{}
+
 		for _, entry := range scoreboard {
 			if r.config.Scoring.HideOthers && (team == nil || entry.Team.ID != team.ID) {
 				continue

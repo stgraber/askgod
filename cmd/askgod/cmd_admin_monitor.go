@@ -32,6 +32,7 @@ func (c *client) cmdAdminMonitorLog(ctx *cli.Context) error {
 		}
 
 		event := api.Event{}
+
 		err = json.Unmarshal(data, &event)
 		if err != nil {
 			continue
@@ -42,6 +43,7 @@ func (c *client) cmdAdminMonitorLog(ctx *cli.Context) error {
 		}
 
 		logEntry := api.EventLogging{}
+
 		err = json.Unmarshal(event.Metadata, &logEntry)
 		if err != nil {
 			continue
@@ -92,6 +94,7 @@ func (c *client) cmdAdminMonitorFlags(_ *cli.Context) error {
 		}
 
 		event := api.Event{}
+
 		err = json.Unmarshal(data, &event)
 		if err != nil {
 			continue
@@ -102,6 +105,7 @@ func (c *client) cmdAdminMonitorFlags(_ *cli.Context) error {
 		}
 
 		score := api.EventFlag{}
+
 		err = json.Unmarshal(event.Metadata, &score)
 		if err != nil {
 			continue

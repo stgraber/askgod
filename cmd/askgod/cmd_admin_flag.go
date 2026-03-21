@@ -63,6 +63,7 @@ func (c *client) cmdAdminImportFlags(ctx *cli.Context) error {
 		reader := bufio.NewReader(os.Stdin)
 		_, _ = fmt.Printf("Flush all flags (yes/no): ")
 		input, _ := reader.ReadString('\n')
+
 		input = strings.TrimSuffix(input, "\n")
 		if strings.TrimSpace(strings.ToLower(input)) != "yes" {
 			return errors.New("user aborted flush operation")
@@ -82,6 +83,7 @@ func (c *client) cmdAdminImportFlags(ctx *cli.Context) error {
 
 	// Parse the JSON file
 	flags := []api.AdminFlag{}
+
 	err = json.Unmarshal(content, &flags)
 	if err != nil {
 		return err
@@ -134,6 +136,7 @@ func (c *client) cmdAdminUpdateFlag(ctx *cli.Context) error {
 	}
 
 	flag := api.AdminFlag{}
+
 	err := c.queryStruct("GET", "/flags/"+ctx.Args().Get(0), nil, &flag)
 	if err != nil {
 		return err

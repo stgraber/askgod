@@ -56,6 +56,7 @@ func (db *DB) GetTeam(id int64) (*api.AdminTeam, error) {
 	// Query the database entry
 	row := api.AdminTeam{}
 	tags := ""
+
 	err := db.QueryRow("SELECT id, name, country, website, notes, subnets, tags FROM team WHERE id=$1;", id).Scan(
 		&row.ID, &row.Name, &row.Country, &row.Website, &row.Notes, &row.Subnets, &tags)
 	if err != nil {
