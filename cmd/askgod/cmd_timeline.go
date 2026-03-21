@@ -1,21 +1,22 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/nsec/askgod/api"
 )
 
-func (c *client) cmdTimeline(_ *cli.Context) error {
+func (c *client) cmdTimeline(ctx context.Context, _ *cli.Command) error {
 	// Get the data
 	resp := []api.TimelineEntry{}
 
-	err := c.queryStruct("GET", "/timeline", nil, &resp)
+	err := c.queryStruct(ctx, "GET", "/timeline", nil, &resp)
 	if err != nil {
 		return err
 	}

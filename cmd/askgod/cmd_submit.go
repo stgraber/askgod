@@ -1,29 +1,30 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/nsec/askgod/api"
 )
 
-func (c *client) cmdSubmit(ctx *cli.Context) error {
-	if ctx.NArg() != 1 {
-		_ = cli.ShowCommandHelp(ctx, "submit")
+func (c *client) cmdSubmit(ctx context.Context, cmd *cli.Command) error {
+	if cmd.NArg() != 1 {
+		_ = cli.ShowCommandHelp(ctx, cmd, "submit")
 
 		return nil
 	}
 
 	// Prepare the input
 	flag := api.FlagPost{}
-	flag.Flag = ctx.Args().Get(0)
-	flag.Notes = ctx.String("notes")
+	flag.Flag = cmd.Args().Get(0)
+	flag.Notes = cmd.String("notes")
 
 	// Send the flag
 	resp := api.Flag{}
 
-	err := c.queryStruct("POST", "/team/flags", flag, &resp)
+	err := c.queryStruct(ctx, "POST", "/team/flags", flag, &resp)
 	if err != nil {
 		return err
 	}

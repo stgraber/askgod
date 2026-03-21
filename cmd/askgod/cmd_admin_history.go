@@ -2,22 +2,23 @@ package main
 
 import (
 	"cmp"
+	"context"
 	"os"
 	"slices"
 	"strconv"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/nsec/askgod/api"
 	"github.com/nsec/askgod/internal/utils"
 )
 
-func (c *client) cmdAdminHistory(_ *cli.Context) error {
+func (c *client) cmdAdminHistory(ctx context.Context, _ *cli.Command) error {
 	// Get the scores
 	scores := []api.AdminScore{}
 
-	err := c.queryStruct("GET", "/scores", nil, &scores)
+	err := c.queryStruct(ctx, "GET", "/scores", nil, &scores)
 	if err != nil {
 		return err
 	}
@@ -29,7 +30,7 @@ func (c *client) cmdAdminHistory(_ *cli.Context) error {
 	// Get the teams
 	teams := []api.AdminTeam{}
 
-	err = c.queryStruct("GET", "/teams", nil, &teams)
+	err = c.queryStruct(ctx, "GET", "/teams", nil, &teams)
 	if err != nil {
 		return err
 	}
@@ -37,7 +38,7 @@ func (c *client) cmdAdminHistory(_ *cli.Context) error {
 	// Get the flags
 	flags := []api.AdminFlag{}
 
-	err = c.queryStruct("GET", "/flags", nil, &flags)
+	err = c.queryStruct(ctx, "GET", "/flags", nil, &flags)
 	if err != nil {
 		return err
 	}

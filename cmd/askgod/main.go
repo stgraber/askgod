@@ -1,26 +1,27 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func main() {
 	c := client{}
 
-	app := cli.NewApp()
+	app := &cli.Command{}
 	app.Name = "askgod"
 	app.Usage = "CTF scoring system - client"
 	app.HideVersion = true
 	app.HideHelp = true
-	app.EnableBashCompletion = true
+	app.EnableShellCompletion = true
 
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
 			Name:        "server",
-			EnvVars:     []string{"ASKGOD_SERVER"},
+			Sources:     cli.EnvVars("ASKGOD_SERVER"),
 			Value:       "https://askgod.nsec",
 			Usage:       "URL of askgod server",
 			Destination: &c.server,
@@ -32,7 +33,7 @@ func main() {
 			Name:   "admin",
 			Usage:  "Admin functions",
 			Hidden: true,
-			Subcommands: []*cli.Command{
+			Commands: []*cli.Command{
 				{
 					Name:      "config",
 					ArgsUsage: "[key=value...]",
@@ -241,11 +242,11 @@ func main() {
 		},
 	}
 
-	app.Before = func(_ *cli.Context) error {
-		return c.setupClient()
+	app.Before = func(ctx context.Context, _ *cli.Command) (context.Context, error) {
+		return ctx, c.setupClient()
 	}
 
-	err := app.Run(os.Args)
+	err := app.Run(context.TODO(), os.Args)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "error: %v\n", err)
 

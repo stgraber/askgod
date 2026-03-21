@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -8,12 +9,12 @@ import (
 	"strconv"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/nsec/askgod/api"
 )
 
-func (c *client) cmdScoreboard(ctx *cli.Context) error {
+func (c *client) cmdScoreboard(ctx context.Context, cmd *cli.Command) error {
 	board := []api.ScoreboardEntry{}
 
 	const layout = "2006/01/02 15:04"
@@ -65,9 +66,9 @@ func (c *client) cmdScoreboard(ctx *cli.Context) error {
 		table.Render()
 	}
 
-	if !ctx.Bool("live") {
+	if !cmd.Bool("live") {
 		// Get the data
-		err := c.queryStruct("GET", "/scoreboard", nil, &board)
+		err := c.queryStruct(ctx, "GET", "/scoreboard", nil, &board)
 		if err != nil {
 			return err
 		}
@@ -123,7 +124,7 @@ func (c *client) cmdScoreboard(ctx *cli.Context) error {
 				// Get a new dump
 				board = []api.ScoreboardEntry{}
 
-				err = c.queryStruct("GET", "/scoreboard", nil, &board)
+				err = c.queryStruct(ctx, "GET", "/scoreboard", nil, &board)
 				if err != nil {
 					close(chUpdate)
 
@@ -188,7 +189,7 @@ func (c *client) cmdScoreboard(ctx *cli.Context) error {
 	}()
 
 	// Get the initial data
-	err = c.queryStruct("GET", "/scoreboard", nil, &board)
+	err = c.queryStruct(ctx, "GET", "/scoreboard", nil, &board)
 	if err != nil {
 		return err
 	}

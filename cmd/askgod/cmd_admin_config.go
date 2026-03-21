@@ -1,26 +1,27 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/goccy/go-yaml"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/nsec/askgod/api"
 )
 
-func (c *client) cmdAdminConfig(ctx *cli.Context) error {
+func (c *client) cmdAdminConfig(ctx context.Context, cmd *cli.Command) error {
 	// Get the data
 	resp := api.Config{}
 
-	err := c.queryStruct("GET", "/config", nil, &resp)
+	err := c.queryStruct(ctx, "GET", "/config", nil, &resp)
 	if err != nil {
 		return err
 	}
 
 	// Process any field update
-	if ctx.NArg() > 0 {
-		for _, arg := range ctx.Args().Slice() {
+	if cmd.NArg() > 0 {
+		for _, arg := range cmd.Args().Slice() {
 			err := setStructKey(&resp, arg)
 			if err != nil {
 				return err
@@ -28,7 +29,7 @@ func (c *client) cmdAdminConfig(ctx *cli.Context) error {
 		}
 
 		// Update the team
-		err = c.queryStruct("PUT", "/config", resp.ConfigPut, nil)
+		err = c.queryStruct(ctx, "PUT", "/config", resp.ConfigPut, nil)
 		if err != nil {
 			return err
 		}

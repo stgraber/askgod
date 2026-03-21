@@ -1,19 +1,20 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/goccy/go-yaml"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/nsec/askgod/api"
 )
 
-func (c *client) cmdStatus(_ *cli.Context) error {
+func (c *client) cmdStatus(ctx context.Context, _ *cli.Command) error {
 	// Get the data
 	resp := api.Status{}
 
-	err := c.queryStruct("GET", "", nil, &resp)
+	err := c.queryStruct(ctx, "GET", "", nil, &resp)
 	if err != nil {
 		return err
 	}

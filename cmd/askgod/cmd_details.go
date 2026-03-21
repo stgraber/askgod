@@ -1,26 +1,27 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/nsec/askgod/api"
 )
 
-func (c *client) cmdDetails(ctx *cli.Context) error {
+func (c *client) cmdDetails(ctx context.Context, cmd *cli.Command) error {
 	// Get the data
 	resp := api.Team{}
 
-	err := c.queryStruct("GET", "/team", nil, &resp)
+	err := c.queryStruct(ctx, "GET", "/team", nil, &resp)
 	if err != nil {
 		return err
 	}
 
 	// Process any field update
-	if ctx.NArg() > 0 {
-		for _, arg := range ctx.Args().Slice() {
+	if cmd.NArg() > 0 {
+		for _, arg := range cmd.Args().Slice() {
 			err := setStructKey(&resp, arg)
 			if err != nil {
 				return err
@@ -28,7 +29,7 @@ func (c *client) cmdDetails(ctx *cli.Context) error {
 		}
 
 		// Update the team
-		err = c.queryStruct("PUT", "/team", resp.TeamPut, nil)
+		err = c.queryStruct(ctx, "PUT", "/team", resp.TeamPut, nil)
 		if err != nil {
 			return err
 		}

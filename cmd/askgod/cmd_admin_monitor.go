@@ -1,19 +1,20 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
 	"github.com/inconshreveable/log15"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/nsec/askgod/api"
 	"github.com/nsec/askgod/internal/utils"
 )
 
-func (c *client) cmdAdminMonitorLog(ctx *cli.Context) error {
+func (c *client) cmdAdminMonitorLog(_ context.Context, cmd *cli.Command) error {
 	// Parse the arguments
-	logLvl, err := log15.LvlFromString(ctx.String("loglevel"))
+	logLvl, err := log15.LvlFromString(cmd.String("loglevel"))
 	if err != nil {
 		return err
 	}
@@ -78,7 +79,7 @@ func (c *client) cmdAdminMonitorLog(ctx *cli.Context) error {
 	return nil //nolint:nilerr
 }
 
-func (c *client) cmdAdminMonitorFlags(_ *cli.Context) error {
+func (c *client) cmdAdminMonitorFlags(_ context.Context, _ *cli.Command) error {
 	// Connection handler
 	conn, err := c.websocket("/events?type=flags")
 	if err != nil {

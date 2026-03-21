@@ -104,7 +104,7 @@ func (c *client) setupClient() error {
 	return nil
 }
 
-func (c *client) queryStruct(method string, path string, data any, target any) error {
+func (c *client) queryStruct(ctx context.Context, method string, path string, data any, target any) error {
 	var (
 		req *http.Request
 		err error
@@ -123,7 +123,7 @@ func (c *client) queryStruct(method string, path string, data any, target any) e
 		}
 
 		// Some data to be sent along with the request
-		req, err = http.NewRequestWithContext(context.TODO(), method, u, &buf)
+		req, err = http.NewRequestWithContext(ctx, method, u, &buf)
 		if err != nil {
 			return err
 		}
@@ -132,7 +132,7 @@ func (c *client) queryStruct(method string, path string, data any, target any) e
 		req.Header.Set("Content-Type", "application/json")
 	} else {
 		// No data to be sent along with the request
-		req, err = http.NewRequestWithContext(context.TODO(), method, u, nil)
+		req, err = http.NewRequestWithContext(ctx, method, u, nil)
 		if err != nil {
 			return err
 		}

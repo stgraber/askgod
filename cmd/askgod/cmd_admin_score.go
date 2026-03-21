@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,16 +11,16 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/nsec/askgod/api"
 )
 
-func (c *client) cmdAdminAddScore(ctx *cli.Context) error {
+func (c *client) cmdAdminAddScore(ctx context.Context, cmd *cli.Command) error {
 	score := api.AdminScorePost{}
 
-	if ctx.NArg() > 0 {
-		for _, arg := range ctx.Args().Slice() {
+	if cmd.NArg() > 0 {
+		for _, arg := range cmd.Args().Slice() {
 			err := setStructKey(&score, arg)
 			if err != nil {
 				return err
@@ -27,7 +28,7 @@ func (c *client) cmdAdminAddScore(ctx *cli.Context) error {
 		}
 	}
 
-	err := c.queryStruct("POST", "/scores", score, nil)
+	err := c.queryStruct(ctx, "POST", "/scores", score, nil)
 	if err != nil {
 		return err
 	}
@@ -35,14 +36,14 @@ func (c *client) cmdAdminAddScore(ctx *cli.Context) error {
 	return nil
 }
 
-func (c *client) cmdAdminDeleteScore(ctx *cli.Context) error {
-	if ctx.NArg() != 1 {
-		_ = cli.ShowSubcommandHelp(ctx)
+func (c *client) cmdAdminDeleteScore(ctx context.Context, cmd *cli.Command) error {
+	if cmd.NArg() != 1 {
+		_ = cli.ShowSubcommandHelp(cmd)
 
 		return nil
 	}
 
-	err := c.queryStruct("DELETE", "/scores/"+ctx.Args().Get(0), nil, nil)
+	err := c.queryStruct(ctx, "DELETE", "/scores/"+cmd.Args().Get(0), nil, nil)
 	if err != nil {
 		return err
 	}
@@ -50,15 +51,15 @@ func (c *client) cmdAdminDeleteScore(ctx *cli.Context) error {
 	return nil
 }
 
-func (c *client) cmdAdminImportScores(ctx *cli.Context) error {
-	if ctx.NArg() < 1 {
-		_ = cli.ShowSubcommandHelp(ctx)
+func (c *client) cmdAdminImportScores(ctx context.Context, cmd *cli.Command) error {
+	if cmd.NArg() < 1 {
+		_ = cli.ShowSubcommandHelp(cmd)
 
 		return nil
 	}
 
 	// Flush all existing entries
-	if ctx.Bool("flush") {
+	if cmd.Bool("flush") {
 		reader := bufio.NewReader(os.Stdin)
 		_, _ = fmt.Print("Flush all scores (yes/no): ") //nolint:forbidigo
 		input, _ := reader.ReadString('\n')
@@ -68,14 +69,14 @@ func (c *client) cmdAdminImportScores(ctx *cli.Context) error {
 			return errors.New("user aborted flush operation")
 		}
 
-		err := c.queryStruct("DELETE", "/scores?empty=1", nil, nil)
+		err := c.queryStruct(ctx, "DELETE", "/scores?empty=1", nil, nil)
 		if err != nil {
 			return err
 		}
 	}
 
 	// Read the file
-	content, err := os.ReadFile(ctx.Args().Get(0))
+	content, err := os.ReadFile(cmd.Args().Get(0))
 	if err != nil {
 		return err
 	}
@@ -89,7 +90,7 @@ func (c *client) cmdAdminImportScores(ctx *cli.Context) error {
 	}
 
 	// Create the scores
-	err = c.queryStruct("POST", "/scores?bulk=1", scores, nil)
+	err = c.queryStruct(ctx, "POST", "/scores?bulk=1", scores, nil)
 	if err != nil {
 		return err
 	}
@@ -97,11 +98,11 @@ func (c *client) cmdAdminImportScores(ctx *cli.Context) error {
 	return nil
 }
 
-func (c *client) cmdAdminListScores(_ *cli.Context) error {
+func (c *client) cmdAdminListScores(ctx context.Context, _ *cli.Command) error {
 	// Get the data
 	resp := []api.AdminScore{}
 
-	err := c.queryStruct("GET", "/scores", nil, &resp)
+	err := c.queryStruct(ctx, "GET", "/scores", nil, &resp)
 	if err != nil {
 		return err
 	}
@@ -129,22 +130,22 @@ func (c *client) cmdAdminListScores(_ *cli.Context) error {
 	return nil
 }
 
-func (c *client) cmdAdminUpdateScore(ctx *cli.Context) error {
-	if ctx.NArg() < 1 {
-		_ = cli.ShowSubcommandHelp(ctx)
+func (c *client) cmdAdminUpdateScore(ctx context.Context, cmd *cli.Command) error {
+	if cmd.NArg() < 1 {
+		_ = cli.ShowSubcommandHelp(cmd)
 
 		return nil
 	}
 
 	score := api.AdminScore{}
 
-	err := c.queryStruct("GET", "/scores/"+ctx.Args().Get(0), nil, &score)
+	err := c.queryStruct(ctx, "GET", "/scores/"+cmd.Args().Get(0), nil, &score)
 	if err != nil {
 		return err
 	}
 
-	if ctx.NArg() > 1 {
-		for _, arg := range ctx.Args().Slice()[1:] {
+	if cmd.NArg() > 1 {
+		for _, arg := range cmd.Args().Slice()[1:] {
 			err := setStructKey(&score, arg)
 			if err != nil {
 				return err
@@ -152,7 +153,7 @@ func (c *client) cmdAdminUpdateScore(ctx *cli.Context) error {
 		}
 	}
 
-	err = c.queryStruct("PUT", "/scores/"+ctx.Args().Get(0), score.AdminScorePut, nil)
+	err = c.queryStruct(ctx, "PUT", "/scores/"+cmd.Args().Get(0), score.AdminScorePut, nil)
 	if err != nil {
 		return err
 	}

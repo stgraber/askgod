@@ -1,36 +1,37 @@
 package main
 
 import (
+	"context"
 	"os"
 	"strconv"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/nsec/askgod/api"
 )
 
-func (c *client) cmdHistory(ctx *cli.Context) error {
+func (c *client) cmdHistory(ctx context.Context, cmd *cli.Command) error {
 	// Get the data
 	resp := []api.Flag{}
 
-	if ctx.NArg() > 0 {
+	if cmd.NArg() > 0 {
 		flag := api.Flag{}
 
-		err := c.queryStruct("GET", "/team/flags/"+ctx.Args().Get(0), nil, &flag)
+		err := c.queryStruct(ctx, "GET", "/team/flags/"+cmd.Args().Get(0), nil, &flag)
 		if err != nil {
 			return err
 		}
 
-		if ctx.NArg() > 1 {
-			for _, arg := range ctx.Args().Slice()[1:] {
+		if cmd.NArg() > 1 {
+			for _, arg := range cmd.Args().Slice()[1:] {
 				err := setStructKey(&flag, arg)
 				if err != nil {
 					return err
 				}
 			}
 
-			err = c.queryStruct("PUT", "/team/flags/"+ctx.Args().Get(0), flag.FlagPut, nil)
+			err = c.queryStruct(ctx, "PUT", "/team/flags/"+cmd.Args().Get(0), flag.FlagPut, nil)
 			if err != nil {
 				return err
 			}
@@ -40,7 +41,7 @@ func (c *client) cmdHistory(ctx *cli.Context) error {
 
 		resp = append(resp, flag)
 	} else {
-		err := c.queryStruct("GET", "/team/flags", nil, &resp)
+		err := c.queryStruct(ctx, "GET", "/team/flags", nil, &resp)
 		if err != nil {
 			return err
 		}
