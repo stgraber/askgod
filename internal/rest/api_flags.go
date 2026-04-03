@@ -171,6 +171,9 @@ func (r *rest) submitTeamFlag(writer http.ResponseWriter, request *http.Request,
 		return
 	}
 
+	// Limit the request body size to avoid abuse.
+	request.Body = http.MaxBytesReader(writer, request.Body, 1024*1024)
+
 	// Decode the provided JSON input
 	flag := api.FlagPost{}
 
