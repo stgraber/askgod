@@ -12,6 +12,7 @@ type AdminScore struct {
 	AdminScorePost `yaml:",inline"`
 
 	ID         int64     `json:"id"          yaml:"id"`
+	Source     string    `json:"source"      yaml:"source"`
 	SubmitTime time.Time `json:"submit_time" yaml:"submit_time"`
 }
 

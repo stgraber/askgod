@@ -190,6 +190,16 @@ func (r *rest) submitTeamFlag(writer http.ResponseWriter, request *http.Request,
 		return
 	}
 
+	source, ok := api.NormalizeSource(flag.Source)
+	if !ok {
+		logger.Warn("Invalid source value", log15.Ctx{"source": flag.Source})
+		r.errorResponse(400, "Invalid source value", writer, request)
+
+		return
+	}
+
+	flag.Source = source
+
 	// Extract the client IP
 	ip, err := r.getIP(request)
 	if err != nil {
