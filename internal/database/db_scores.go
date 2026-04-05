@@ -194,8 +194,8 @@ func (db *DB) CreateScore(ctx context.Context, score api.AdminScorePost) (int64,
 	id := int64(-1)
 
 	// Create the database entry
-	err := db.QueryRowContext(ctx, "INSERT INTO score (teamid, flagid, value, notes, submit_time) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-		score.TeamID, score.FlagID, score.Value, score.Notes, time.Now()).Scan(&id)
+	err := db.QueryRowContext(ctx, "INSERT INTO score (teamid, flagid, value, notes, source, submit_time) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+		score.TeamID, score.FlagID, score.Value, score.Notes, score.Source, time.Now()).Scan(&id)
 	if err != nil {
 		return -1, err
 	}
